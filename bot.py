@@ -1,14 +1,17 @@
 import discord
+import json
 from discord.ext import commands
 
-bot = commands.Bot(command_prefix='?')
+bot = commands.Bot(command_prefix='~')
 
 
 @bot.command()
 async def ping(ctx):
     await ctx.send('Pong')
 
-with open('token.txt') as fp:
-    token = fp.read().strip()
+with open('token.json') as fp:
+    token = json.load(fp)
 
-bot.run(token)
+discord_token = token['d-token']
+
+bot.run(discord_token)
