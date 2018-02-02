@@ -4,24 +4,26 @@ import requests
 from discord.ext import commands
 
 bot = commands.Bot(command_prefix='!!')
-#----
+# ---- load token.json ----
 with open('token.json') as fp:
     token = json.load(fp)
-#---- getting keys & tokens from not here ----
+
+# ---- get the tokens from token.json ----
 steam_key = token['s-key']
 discord_token = token['d-token']
 
-# test ping command ----
+# ----test ping command ----
 @bot.command()
 async def ping(ctx):
     await ctx.send('Pong')
 
-# first iteration of profile-placeholder ----
+# ---- first iteration of profile-placeholder ----
 @bot.command()
 async def test(ctx, id: int = None):
     if id is None:
-        await ctx.send('heck off, gimme a steamID (the long one please) :frowning:')
+        await ctx.send(':bangbang: No valid steamID detected. :bangbang:')
         return
+
     url = (
         'https://api.steampowered.com/ISteamUser/GetPlayer'
         'Summaries/v2/'
