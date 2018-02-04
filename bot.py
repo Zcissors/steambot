@@ -59,10 +59,7 @@ async def profile(ctx, id: int = None):
 
             # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
-
-
-
-
+# ---- embed stuff ----
     embed=discord.Embed(title=f'Steam Profile of {name}', url=profile_url, colour=state.colour)
     embed.set_thumbnail(url=avatar_img)
     embed.add_field(name='Current Steam Level:', value=level, inline=False)
