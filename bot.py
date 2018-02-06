@@ -9,6 +9,10 @@ import logging
 import discord
 import requests
 from discord.ext import commands
+
+import appids
+appid_cache = appids.AppIdCacher()
+
 logging.basicConfig(level='WARNING')
 # DEBUG < INFO < WARNING < ERROR < FATAL
 logger = logging.getLogger('Pinguu')
@@ -186,6 +190,27 @@ async def status(ctx, id: int = None):
     state = profilestates.states[data1['personastate']]
 
     await ctx.send(f'{name} is currently {state}.')
+
+@bot.command()
+async def gameinfo(ctx, *, content):
+    """
+    Provides information about a game or AppId
+    """
+    if content.isdigit():
+        app_id = int(content)
+        # This just means the text is formatted the way steam does it.
+        game_name = await appid_cache.lookup_id(app_id)
+    else:
+        app_id = await appid_cache.lookup_name(content)
+        game_name = None if app_id is None else await appid_cache.lookup_id(app_id)
+
+    if app_id is None or game_name is None:
+        await ctx.send('No match')
+        return
+
+    # app_id holds the app id now
+    # game_name holds the game name string now
+    await ctx.send(f'{game_name} belongs to appid {app_id}.')
 
 
 # ---- I need this to run the bot lol----
