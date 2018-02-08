@@ -23,17 +23,18 @@ class AppIdCacher:
 
     async def _recache(self):
         while True:
-            with await self._lock:
-                resp = await aiohttp.request('GET', ENDPOINT)
-                if resp.status != 200:
-                    self._logger.error(f'Could not recache. {resp.status}: {resp.reason}')
-                else:
-                    data = await resp.json()
-                    self._appid2name = {a['appid']: a['name'] for a in data['applist']['apps']}
-                    self._name2appid = {a['name'].lower().strip(): a['appid'] for a in data['applist']['apps']}
+            async with aiohttp.ClientSession() as sesh:
+                with await self._lock:
+                    resp = await sesh.request('GET', ENDPOINT)
+                    if resp.status != 200:
+                        self._logger.error(f'Could not recache. {resp.status}: {resp.reason}')
+                    else:
+                        data = await resp.json()
+                        self._appid2name = {a['appid']: a['name'] for a in data['applist']['apps']}
+                        self._name2appid = {a['name'].lower().strip(): a['appid'] for a in data['applist']['apps']}
 
-                    self._logger.info(f'Cached {len(self._appid2name)} game IDs.')
-            await asyncio.sleep(PERIOD)
+                        self._logger.info(f'Cached {len(self._appid2name)} game IDs.')
+                await asyncio.sleep(PERIOD)
 
     async def lookup_id(self, appid: int, default=None) -> str:
         with await self._lock:
