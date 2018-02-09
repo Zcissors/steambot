@@ -5,10 +5,12 @@ import random
 import time
 import logging
 import functools
+import aiohttp
 
 import bs4
 import discord
 import requests
+import asyncio
 from discord.ext import commands
 
 import appids
@@ -23,7 +25,7 @@ def log_who(coro):
     @functools.wraps(coro)
     async def command(ctx, *args, **kwargs):
         # Forgot what the logger variable was called
-        logger.info(f'{ctx.author} in #{ctx.channel} in guild {ctx.guild if ctx.guild else "DMs"} '
+        logger.info(f' {ctx.author} in #{ctx.channel} in guild {ctx.guild if ctx.guild else "DMs"} '
                      f'invoked {ctx.invoked_with} with args {args} {kwargs}')
         return await coro(ctx, *args, **kwargs)
     return command
@@ -48,7 +50,17 @@ with open('token.json') as fp:
 # ---- get the tokens from token.json ----
 steam_key = token['s-key']
 discord_token = token['d-token']
+bot_token = token['b-token']
 
+
+@bot.command(cls=PinguuCommand)
+@log_who
+async def invite(ctx):
+    """
+    A command to get an invite link for the bot.
+    """
+    await ctx.send(f'here is a link you can use to invite me to your Discord guild! \N{SMILING FACE WITH OPEN MOUTH}'
+                   ' \nhttps://discordapp.com/oauth2/authorize?client_id={bot_token}&scope=bot')
 
 # ----test ping command ----
 @bot.command(
@@ -75,39 +87,39 @@ async def profile(ctx, id=None):
         await ctx.send(
             "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
         return
-    if not id.isdigit():
-        url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
-        params = {
-            'key': steam_key,
-            'format': 'json',
-            'url_type': 1,
-            'vanityurl': id
-        }
+    async with aiohttp.ClientSession() as session:
+        if not id.isdigit():
+            url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+            params = {
+                'key': steam_key,
+                'format': 'json',
+                'url_type': 1,
+                'vanityurl': id
+            }
+            resp = await session.get(url, params=params)
+            data = await resp.json()
 
-        resp = requests.get(url, params=params)
-        data = resp.json()
-        if data['response']['success'] != 1:
-            return await ctx.send(data['response']['message'])
-        id = data['response']['steamid']
+            if data['response']['success'] != 1:
+                return await ctx.send(data['response']['message'])
+            id = data['response']['steamid']
 
-    # url's of the API we're getting stuff from
-    url1 = (
-        'https://api.steampowered.com/ISteamUser/GetPlayer'
-        'Summaries/v2/'
-    )
-    url2 = (
-        'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
-    )
-    # You will eventually not want to do it like this, as there is a much
-    # faster way.
-    resp1 = requests.get(url1, {'key': steam_key, 'steamids': id})
-    resp2 = requests.get(url2, {'key': steam_key, 'steamid': id})
+        # url's of the API we're getting stuff from
+        url1 = (
+            'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/'
+        )
+        url2 = (
+                'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
+        )
 
-    # This will probably error if an invalid key was given. You eventually
-    # want to do some kind of error checking here.
-    data1 = resp1.json()['response']['players'][0]
-    data2 = resp2.json()['response']
-
+        resp1, resp2 = await asyncio.gather(
+            session.get(url1, params={'key': steam_key, 'steamids': id}),
+            session.get(url2, params={'key': steam_key, 'steamid': id})
+        )
+        data1, data2 = await asyncio.gather(
+            resp1.json(), resp2.json()
+        )
+        data1 = data1['response']['players'][0]
+        data2 = data2['response']
     # Variables that go into the message we're sending.
     # Store the info you want in variables
     name = data1['personaname']
@@ -115,8 +127,7 @@ async def profile(ctx, id=None):
     avatar_img = data1['avatarfull']
     # ----
     if 'timecreated' in data1:
-        created_on = time.strftime('%A, %d %B %Y at %I:%M%p',
-                                   time.gmtime(data1['timecreated']))
+        created_on = time.strftime('%A, %d %B %Y at %I:%M%p', time.gmtime(data1['timecreated']))
     else:
         created_on = None
     # ----
@@ -181,7 +192,7 @@ async def profile(ctx, id=None):
 
 
 # ---- simple profile ----
-@bot.command(cls=PinguuCommand)
+@bot.command(enabled=False, cls=PinguuCommand)
 @log_who
 async def simpprofile(ctx, id=None):
     """
@@ -273,8 +284,8 @@ async def avatar(ctx, id=None):
             'vanityurl': id
         }
 
-        resp = requests.get(url, params=params)
-        data = resp.json()
+        resp1 = requests.get(url, params=params)
+        data = resp1.json()
         if data['response']['success'] != 1:
             return await ctx.send(data['response']['message'])
         id = data['response']['steamid']
@@ -285,8 +296,10 @@ async def avatar(ctx, id=None):
         'Summaries/v2/'
     )
 
-    resp1 = requests.get(url1, {'key': steam_key, 'steamids': id})
-    data1 = resp1.json()['response']['players'][0]
+    async with aiohttp.ClientSession() as session:
+        resp = await session.get(url1, params={'key': steam_key, 'steamids': id})
+        data1 = (await resp.json())['response']['players'][0]
+
     # variables that go into the message we're sending.
     avatar_img = data1['avatarfull']
     state = profilestates.states[data1['personastate']]
@@ -327,8 +340,9 @@ async def status(ctx, id=None):
         'Summaries/v2/'
     )
     # gets stuff from the url in an 'easy to get' layout.
-    resp1 = requests.get(url1, {'key': steam_key, 'steamids': id})
-    data1 = resp1.json()['response']['players'][0]
+    async with aiohttp.ClientSession() as session:
+        resp = await session.get(url1, params={'key': steam_key, 'steamids': id})
+        data1 = (await resp.json())['response']['players'][0]
     # variables that go into the message we're sending.
     name = data1['personaname']
     state = profilestates.states[data1['personastate']]
@@ -364,11 +378,16 @@ async def gameinfo(ctx, *, content):
         'GetNumberOfCurrentPlayers/v1/'
     )
     # gets stuff from the url in an 'easy to get' layout.
-    resp1 = requests.get(url1, {'appids': app_id})
-    data1 = resp1.json()[str(app_id)]['data']
-
-    resp2 = requests.get(url2, {'key': steam_key, 'appid': app_id})
-    data2 = resp2.json()['response']
+    async with aiohttp.ClientSession() as session:
+        resp1, resp2 = await asyncio.gather(
+            session.get(url1, params={'appids': app_id}),
+            session.get(url2, params={'key': steam_key, 'appid': app_id})
+        )
+        data1, data2 = await asyncio.gather(
+            resp1.json(), resp2.json()
+        )
+    data1 = data1[str(app_id)]['data']
+    data2 = data2['response']
 
     desc = data1['short_description']
     clean_text = bs4.BeautifulSoup(desc, 'html.parser').text
