@@ -4,6 +4,7 @@ import profilestates
 import random
 import time
 import logging
+import functools
 
 import bs4
 import discord
@@ -18,11 +19,20 @@ logging.basicConfig(level='INFO')
 # DEBUG < INFO < WARNING < ERROR < FATAL
 logger = logging.getLogger('Pinguu')
 
+def log_who(coro):
+    @functools.wraps(coro)
+    async def command(ctx, *args, **kwargs):
+        # Forgot what the logger variable was called
+        logger.info(f'{ctx.author} in #{ctx.channel} in guild {ctx.guild if ctx.guild else "DMs"} '
+                     f'invoked {ctx.invoked_with} with args {args} {kwargs}')
+        return await coro(ctx, *args, **kwargs)
+    return command
 
 class PinguuCommand(commands.Command):
     async def on_error(self, cog, ctx, error):
         import traceback
-        err = traceback.format_exception(type(error), error, error.__traceback__)
+        err = traceback.format_exception(type(error), error,
+                                         error.__traceback__)
         # noinspection PyBroadException
         traceback.print_exception(type(error), error, error.__traceback__)
 
@@ -45,6 +55,7 @@ discord_token = token['d-token']
     name='ping',  # this overrides the function name if you wanted
     aliases=['pong', 'beep'],
     brief='Ping pong hong kong long dong')
+@log_who
 async def ass_feck(ctx):
     """
     This is your docstring for the ass_feck function.
@@ -55,17 +66,19 @@ async def ass_feck(ctx):
 
 # ---- first iteration of profile-placeholder ----
 @bot.command(cls=PinguuCommand)
-async def profile(ctx, id = None):
+@log_who
+async def profile(ctx, id=None):
     """
     Displays the profile of the user belonging to the steamid provided
     """
     if id is None:
-        await ctx.send("\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
+        await ctx.send(
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
         return
     if not id.isdigit():
         url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
         params = {
-            'key' : steam_key,
+            'key': steam_key,
             'format': 'json',
             'url_type': 1,
             'vanityurl': id
@@ -102,7 +115,8 @@ async def profile(ctx, id = None):
     avatar_img = data1['avatarfull']
     # ----
     if 'timecreated' in data1:
-        created_on = time.strftime('%A, %d %B %Y at %I:%M%p', time.gmtime(data1['timecreated']))
+        created_on = time.strftime('%A, %d %B %Y at %I:%M%p',
+                                   time.gmtime(data1['timecreated']))
     else:
         created_on = None
     # ----
@@ -125,26 +139,32 @@ async def profile(ctx, id = None):
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
     # ---- embed stuff ----
-    embed = discord.Embed(title=f'Steam Profile of {name}', url=profile_url, colour=state.colour)
+    embed = discord.Embed(title=f'Steam Profile of {name}', url=profile_url,
+                          colour=state.colour)
     embed.set_thumbnail(url=avatar_img)
     if name is not None:
         embed.add_field(name='Profile Name:', value=name, inline=False)
     if real_name is not None:
         embed.add_field(name='Real Name:', value=real_name, inline=False)
     if current_game is not None:
-        embed.add_field(name='Currently In Game:', value=current_game, inline=False)
+        embed.add_field(name='Currently In Game:', value=current_game,
+                        inline=False)
     if level is not None:
-        embed.add_field(name='Current Steam Level:', value=f'{level:,}', inline=False)
+        embed.add_field(name='Current Steam Level:', value=f'{level:,}',
+                        inline=False)
     if badge_count:
-        embed.add_field(name='Number of Badges:', value=f'{badge_count}', inline=False)
+        embed.add_field(name='Number of Badges:', value=f'{badge_count}',
+                        inline=False)
     if xp is not None:
         embed.add_field(name='Current XP', value=f'{xp:,}', inline=False)
     if xp_needed is not None:
-        embed.add_field(name='XP Needed To Reach Next Level', value=f'{xp_needed:,}', inline=False)
+        embed.add_field(name='XP Needed To Reach Next Level',
+                        value=f'{xp_needed:,}', inline=False)
     if created_on is not None:
         embed.add_field(name='Profile created:', value=created_on, inline=True)
     if 'loccountrycode' in data1:
-        country_emote = 'Country:  ' + chr(0x1f1e6 + ord(data1['loccountrycode'][0]) - ord('A')) + chr(
+        country_emote = 'Country:  ' + chr(
+            0x1f1e6 + ord(data1['loccountrycode'][0]) - ord('A')) + chr(
             0x1f1e6 + ord(data1['loccountrycode'][1]) - ord('A')) + ' '
         embed.add_field(name=country_emote, value='\u200b', inline=False)
     if len(embed.fields) == 0:
@@ -154,20 +174,39 @@ async def profile(ctx, id = None):
     # NO! THIS IS FOR DISCORD.PY V0
     # await self.bot.say(embed=embed)
     # do this:
-    print('Name:', name, 'State:', state, 'Level:', level, 'Badge count:', badge_count, 'Created on:', created_on)
+    print('Name:', name, 'State:', state, 'Level:', level, 'Badge count:',
+          badge_count, 'Created on:', created_on)
     print(created_on)
     await ctx.send(embed=embed)
 
 
 # ---- simple profile ----
 @bot.command(cls=PinguuCommand)
-async def simpprofile(ctx, id: int = None):
+@log_who
+async def simpprofile(ctx, id=None):
     """
     Displays simplified information belonging to the steamid provided
     """
     if id is None:
-        await ctx.send("\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
+        await ctx.send(
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
         return
+
+    if not id.isdigit():
+        url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+        params = {
+            'key': steam_key,
+            'format': 'json',
+            'url_type': 1,
+            'vanityurl': id
+        }
+
+        resp = requests.get(url, params=params)
+        data = resp.json()
+        if data['response']['success'] != 1:
+            return await ctx.send(data['response']['message'])
+        id = data['response']['steamid']
+
     # url's of the API we're getting stuff from
     url1 = (
         'https://api.steampowered.com/ISteamUser/GetPlayer'
@@ -198,7 +237,8 @@ async def simpprofile(ctx, id: int = None):
     level = data2['player_level']
     xp_needed = data2['player_xp_needed_to_level_up']
     if 'loccountrycode' in data1:
-        country_emote = '' + chr(0x1f1e6 + ord(data1['loccountrycode'][0]) - ord('A')) + chr(
+        country_emote = '' + chr(
+            0x1f1e6 + ord(data1['loccountrycode'][0]) - ord('A')) + chr(
             0x1f1e6 + ord(data1['loccountrycode'][1]) - ord('A')) + ' '
     else:
         country_emote = 'N/A'
@@ -214,7 +254,8 @@ async def simpprofile(ctx, id: int = None):
 
 # --- getting a profile picture/avatar ---
 @bot.command(cls=PinguuCommand)
-async def avatar(ctx, id: int = None):
+@log_who
+async def avatar(ctx, id=None):
     """
     Shows the avatar of a given steamid.
     """
@@ -222,6 +263,22 @@ async def avatar(ctx, id: int = None):
         await ctx.send('\N{FACE WITH OPEN MOUTH AND COLD SWEAT} '
                        'I need a steamid64 to work.')
         return
+
+    if not id.isdigit():
+        url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+        params = {
+            'key': steam_key,
+            'format': 'json',
+            'url_type': 1,
+            'vanityurl': id
+        }
+
+        resp = requests.get(url, params=params)
+        data = resp.json()
+        if data['response']['success'] != 1:
+            return await ctx.send(data['response']['message'])
+        id = data['response']['steamid']
+
     # url of the API we're getting stuff from
     url1 = (
         'https://api.steampowered.com/ISteamUser/GetPlayer'
@@ -239,13 +296,31 @@ async def avatar(ctx, id: int = None):
 
 # ---- profile status ----
 @bot.command(cls=PinguuCommand)
-async def status(ctx, id: int = None):
+@log_who
+async def status(ctx, id=None):
     """
     Gets the current status of a requested profile.
     """
     if id is None:
-        await ctx.send("\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
+        await ctx.send(
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
         return
+
+    if not id.isdigit():
+        url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+        params = {
+            'key': steam_key,
+            'format': 'json',
+            'url_type': 1,
+            'vanityurl': id
+        }
+
+        resp = requests.get(url, params=params)
+        data = resp.json()
+        if data['response']['success'] != 1:
+            return await ctx.send(data['response']['message'])
+        id = data['response']['steamid']
+
     # url of the API we're getting stuff from.
     url1 = (
         'https://api.steampowered.com/ISteamUser/GetPlayer'
@@ -264,6 +339,7 @@ async def status(ctx, id: int = None):
 
 # ---- game info ----
 @bot.command(cls=PinguuCommand)
+@log_who
 async def gameinfo(ctx, *, content):
     """
     Provides information about a game or AppId
@@ -274,7 +350,8 @@ async def gameinfo(ctx, *, content):
         game_name = await appid_cache.lookup_id(app_id)
     else:
         app_id = await appid_cache.lookup_name(content)
-        game_name = None if app_id is None else await appid_cache.lookup_id(app_id)
+        game_name = None if app_id is None else await appid_cache.lookup_id(
+            app_id)
 
     if app_id is None or game_name is None:
         await ctx.send('No match')
@@ -306,7 +383,8 @@ async def gameinfo(ctx, *, content):
     embed.add_field(name='Game Title:', value=game_name, inline=False)
     embed.add_field(name='Appid:', value=app_id, inline=False)
     if cc_players is not None:
-        embed.add_field(name='Total Current Players:', value=f'{cc_players:,}', inline=False)
+        embed.add_field(name='Total Current Players:', value=f'{cc_players:,}',
+                        inline=False)
     if developers is not None:
         embed.add_field(name='Developed by: ', value=developers, inline=False)
     if release_date is not None:
@@ -314,7 +392,9 @@ async def gameinfo(ctx, *, content):
     if clean_text:
         embed.add_field(name='Description', value=clean_text, inline=False)
     if store:
-        embed.add_field(name='Store Page:', value=f'http://steamcommunity.com/app/{app_id}', inline=False)
+        embed.add_field(name='Store Page:',
+                        value=f'http://steamcommunity.com/app/{app_id}',
+                        inline=False)
     embed.set_footer(text="Made with \N{HEAVY BLACK HEART} by Vee#4012")
 
     await ctx.send(embed=embed)
