@@ -1,7 +1,8 @@
-# The user's current status. 0 - Offline, 1 - Online, 2 - Busy, 3 - Away, 4 - Snooze,
-# 5 - looking to trade, 6 - looking to play. If the player's profile is private, this
-# will always be "0", except if the user has set their status to looking to trade or
-# looking to play, because a bug makes those status appear even if the profile is private.
+# The user's current status. 0 - Offline, 1 - Online, 2 - Busy, 3 - Away,
+# 4 - Snooze, 5 - looking to trade, 6 - looking to play. If the player's
+# profile is private, this will always be "0", except if the user has set
+# their status to looking to trade or looking to play, because a bug makes
+# those status appear even if the profile is private.
 import collections
 
 ProfileState = collections.namedtuple('ProfileState', 'id name colour emote')
@@ -10,15 +11,17 @@ ProfileState.__str__ = lambda ps: ps.name
 # Allows you to do id(AWAY) and get 3
 ProfileState.__hash__ = lambda ps: ps.name
 
+
 # Makes AWAY == 3, and AWAY == 'aWaY'
 def __eq__(self, other):
     if isinstance(other, int):
         return id(self) == other
     elif isinstance(other, str):
         return str(self).lower() == other.lower()
+
+
 ProfileState.__eq__ = __eq__
 del __eq__
-
 
 OFFLINE = ProfileState(
     id=0,
