@@ -1,19 +1,20 @@
 #!/usr/bin/env python3.6
-import json
-import profilestates
-import random
-import time
+import asyncio
 import logging
-import functools
-import aiohttp
+import json
+import random
+import subprocess
+import time
 
+import aiohttp
 import bs4
 import discord
 import requests
-import asyncio
 from discord.ext import commands
 
+import profilestates
 import appids
+import pinguucmds
 
 appid_cache = appids.AppIdCacher()
 
@@ -21,28 +22,31 @@ logging.basicConfig(level='INFO')
 # DEBUG < INFO < WARNING < ERROR < FATAL
 logger = logging.getLogger('Pinguu')
 
-def log_who(coro):
-    @functools.wraps(coro)
-    async def command(ctx, *args, **kwargs):
-        # Forgot what the logger variable was called
-        logger.info(f' {ctx.author} in #{ctx.channel} in guild {ctx.guild if ctx.guild else "DMs"} '
-                     f'invoked {ctx.invoked_with} with args {args} {kwargs}')
-        return await coro(ctx, *args, **kwargs)
-    return command
-
-class PinguuCommand(commands.Command):
-    async def on_error(self, cog, ctx, error):
-        import traceback
-        err = traceback.format_exception(type(error), error,
-                                         error.__traceback__)
-        # noinspection PyBroadException
-        traceback.print_exception(type(error), error, error.__traceback__)
-
-        await ctx.send(f'An error occurred:\n{"".join(err)}')
-
 
 # ---- bot prefix ----
 bot = commands.Bot(command_prefix='!!')
+
+
+def command(**kwargs):
+    kwargs.setdefault('cls', pinguucmds.PinguuCommand)
+
+    def decorator(coro):
+        cmd = commands.command(**kwargs)(coro)
+        bot.add_command(cmd)
+        return cmd
+    return decorator
+
+
+def group(**kwargs):
+    kwargs.setdefault('cls', pinguucmds.PinguuGroup)
+
+    def decorator(coro):
+        cmd = commands.command(**kwargs)(coro)
+        bot.add_command(cmd)
+        return cmd
+    return decorator
+
+
 # ---- load token.json ----
 with open('token.json') as fp:
     token = json.load(fp)
@@ -53,21 +57,24 @@ discord_token = token['d-token']
 bot_token = token['b-token']
 
 
-@bot.command(cls=PinguuCommand)
-@log_who
+@command()
 async def invite(ctx):
     """
     A command to get an invite link for the bot.
     """
-    await ctx.send(f'here is a link you can use to invite me to your Discord guild! \N{SMILING FACE WITH OPEN MOUTH}'
-                   ' \nhttps://discordapp.com/oauth2/authorize?client_id={bot_token}&scope=bot')
+    await ctx.send('here is a link you can use to invite me to your Discord '
+                   'guild! \N{SMILING FACE WITH OPEN MOUTH}'
+                   ' \nhttps://discordapp.com/oauth2/authorize?client_id'
+                   f'={bot_token}&scope=bot')
+
 
 # ----test ping command ----
-@bot.command(
+@command(
     name='ping',  # this overrides the function name if you wanted
     aliases=['pong', 'beep'],
-    brief='Ping pong hong kong long dong')
-@log_who
+    brief='Ping pong hong kong long dong',
+    hidden=True,
+    enabled=False)
 async def ass_feck(ctx):
     """
     This is your docstring for the ass_feck function.
@@ -77,43 +84,43 @@ async def ass_feck(ctx):
 
 
 # ---- first iteration of profile-placeholder ----
-@bot.command(cls=PinguuCommand)
-@log_who
-async def profile(ctx, id=None):
+@command()
+async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided
     """
-    if id is None:
+    if steamid is None:
         await ctx.send(
-            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to "
+            "work.")
         return
     async with aiohttp.ClientSession() as session:
-        if not id.isdigit():
+        if not steamid.isdigit():
             url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
             params = {
                 'key': steam_key,
                 'format': 'json',
                 'url_type': 1,
-                'vanityurl': id
+                'vanityurl': steamid
             }
             resp = await session.get(url, params=params)
             data = await resp.json()
 
             if data['response']['success'] != 1:
                 return await ctx.send(data['response']['message'])
-            id = data['response']['steamid']
+            steamid = data['response']['steamid']
 
         # url's of the API we're getting stuff from
         url1 = (
             'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/'
         )
         url2 = (
-                'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
+            'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
         )
 
         resp1, resp2 = await asyncio.gather(
-            session.get(url1, params={'key': steam_key, 'steamids': id}),
-            session.get(url2, params={'key': steam_key, 'steamid': id})
+            session.get(url1, params={'key': steam_key, 'steamids': steamid}),
+            session.get(url2, params={'key': steam_key, 'steamid': steamid})
         )
         data1, data2 = await asyncio.gather(
             resp1.json(), resp2.json()
@@ -127,7 +134,8 @@ async def profile(ctx, id=None):
     avatar_img = data1['avatarfull']
     # ----
     if 'timecreated' in data1:
-        created_on = time.strftime('%A, %d %B %Y at %I:%M%p', time.gmtime(data1['timecreated']))
+        created_on = time.strftime('%A, %d %B %Y at %I:%M%p',
+                                   time.gmtime(data1['timecreated']))
     else:
         created_on = None
     # ----
@@ -180,7 +188,8 @@ async def profile(ctx, id=None):
         embed.add_field(name=country_emote, value='\u200b', inline=False)
     if len(embed.fields) == 0:
         embed.add_field(name='Private profile',
-                        value='I can\'t read any info about you. \nDo you have a private profile?')
+                        value='I can\'t read any info about you. \nDo you '
+                              'have a private profile?')
     embed.set_footer(text="Made with \N{HEAVY BLACK HEART} by Vee#4012")
     # NO! THIS IS FOR DISCORD.PY V0
     # await self.bot.say(embed=embed)
@@ -192,50 +201,58 @@ async def profile(ctx, id=None):
 
 
 # ---- simple profile ----
-@bot.command(enabled=False, cls=PinguuCommand)
-@log_who
-async def simpprofile(ctx, id=None):
+@command(hidden=True, enabled=False)
+async def simpprofile(ctx, steamid=None):
     """
     Displays simplified information belonging to the steamid provided
     """
-    if id is None:
+    if steamid is None:
         await ctx.send(
-            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to "
+            "work.")
         return
 
-    if not id.isdigit():
-        url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
-        params = {
-            'key': steam_key,
-            'format': 'json',
-            'url_type': 1,
-            'vanityurl': id
-        }
+    async with aiohttp.ClientSession() as session:
+        # Allows input of a vanity URL. We resolve this first.
+        if not steamid.isdigit():
+            url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+            params = {
+                'key': steam_key,
+                'format': 'json',
+                'url_type': 1,
+                'vanityurl': steamid
+            }
 
-        resp = requests.get(url, params=params)
-        data = resp.json()
-        if data['response']['success'] != 1:
-            return await ctx.send(data['response']['message'])
-        id = data['response']['steamid']
+            resp = requests.get(url, params=params)
+            data = resp.json()
+            if data['response']['success'] != 1:
+                return await ctx.send(data['response']['message'])
+            steamid = data['response']['steamid']
 
-    # url's of the API we're getting stuff from
-    url1 = (
-        'https://api.steampowered.com/ISteamUser/GetPlayer'
-        'Summaries/v2/'
-    )
-    url2 = (
-        'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
-    )
+        # url's of the API we're getting stuff from
+        url1 = (
+            'https://api.steampowered.com/ISteamUser/GetPlayer'
+            'Summaries/v2/'
+        )
+        url2 = (
+            'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
+        )
 
-    # You will eventually not want to do it like this, as there is a much
-    # faster way.
-    resp1 = requests.get(url1, {'key': steam_key, 'steamids': id})
-    resp2 = requests.get(url2, {'key': steam_key, 'steamid': id})
+        # You will eventually not want to do it like this, as there is a much
+        # faster way.
+        resp1, resp2 = await asyncio.gather(
+            session.get(url1, params={'key': steam_key, 'steamids': steamid}),
+            session.get(url2, params={'key': steam_key, 'steamid': steamid})
+        )
 
-    # This will probably error if an invalid key was given. You eventually
-    # want to do some kind of error checking here.
-    data1 = resp1.json()['response']['players'][0]
-    data2 = resp2.json()['response']
+        # This will probably error if an invalid key was given. You eventually
+        # want to do some kind of error checking here.
+        data1, data2 = await asyncio.gather(
+            resp1.json(), resp2.json()
+        )
+
+        data1 = data1['response']['players'][0]
+        data2 = data2['response']
 
     # Variables that go into the message we're sending.
     # Store the info you want in variables
@@ -264,84 +281,83 @@ async def simpprofile(ctx, id=None):
 
 
 # --- getting a profile picture/avatar ---
-@bot.command(cls=PinguuCommand)
-@log_who
-async def avatar(ctx, id=None):
+@command()
+async def avatar(ctx, steamid=None):
     """
     Shows the avatar of a given steamid.
     """
-    if id is None:
+    if steamid is None:
         await ctx.send('\N{FACE WITH OPEN MOUTH AND COLD SWEAT} '
                        'I need a steamid64 to work.')
         return
 
-    if not id.isdigit():
-        url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
-        params = {
-            'key': steam_key,
-            'format': 'json',
-            'url_type': 1,
-            'vanityurl': id
-        }
-
-        resp1 = requests.get(url, params=params)
-        data = resp1.json()
-        if data['response']['success'] != 1:
-            return await ctx.send(data['response']['message'])
-        id = data['response']['steamid']
-
-    # url of the API we're getting stuff from
-    url1 = (
-        'https://api.steampowered.com/ISteamUser/GetPlayer'
-        'Summaries/v2/'
-    )
-
     async with aiohttp.ClientSession() as session:
-        resp = await session.get(url1, params={'key': steam_key, 'steamids': id})
+        if not steamid.isdigit():
+            url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+            params = {
+                'key': steam_key,
+                'format': 'json',
+                'url_type': 1,
+                'vanityurl': steamid
+            }
+
+            data = await (await session.get(url, params=params)).json()
+            if data['response']['success'] != 1:
+                return await ctx.send(data['response']['message'])
+            steamid = data['response']['steamid']
+
+        # url of the API we're getting stuff from
+        url1 = (
+            'https://api.steampowered.com/ISteamUser/GetPlayer'
+            'Summaries/v2/'
+        )
+
+        resp = await session.get(url1,
+                                 params={'key': steam_key, 'steamids': steamid})
         data1 = (await resp.json())['response']['players'][0]
 
     # variables that go into the message we're sending.
     avatar_img = data1['avatarfull']
-    state = profilestates.states[data1['personastate']]
+    # gstate = profilestates.states[data1['personastate']]
 
     await ctx.send(avatar_img)
 
 
 # ---- profile status ----
-@bot.command(cls=PinguuCommand)
-@log_who
-async def status(ctx, id=None):
+@command()
+async def status(ctx, steamid=None):
     """
     Gets the current status of a requested profile.
     """
-    if id is None:
+    if steamid is None:
         await ctx.send(
-            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to work.")
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to "
+            "work.")
         return
 
-    if not id.isdigit():
-        url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
-        params = {
-            'key': steam_key,
-            'format': 'json',
-            'url_type': 1,
-            'vanityurl': id
-        }
-
-        resp = requests.get(url, params=params)
-        data = resp.json()
-        if data['response']['success'] != 1:
-            return await ctx.send(data['response']['message'])
-        id = data['response']['steamid']
-
-    # url of the API we're getting stuff from.
-    url1 = (
-        'https://api.steampowered.com/ISteamUser/GetPlayer'
-        'Summaries/v2/'
-    )
-    # gets stuff from the url in an 'easy to get' layout.
     async with aiohttp.ClientSession() as session:
-        resp = await session.get(url1, params={'key': steam_key, 'steamids': id})
+        if not steamid.isdigit():
+            url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+            params = {
+                'key': steam_key,
+                'format': 'json',
+                'url_type': 1,
+                'vanityurl': steamid
+            }
+
+            data = await (await session.get(url, params=params)).json()
+            if data['response']['success'] != 1:
+                return await ctx.send(data['response']['message'])
+            steamid = data['response']['steamid']
+
+        # url of the API we're getting stuff from.
+        url1 = (
+            'https://api.steampowered.com/ISteamUser/GetPlayer'
+            'Summaries/v2/'
+        )
+        # gets stuff from the url in an 'easy to get' layout.
+        resp = await session.get(url1,
+                                 params={'key': steam_key, 'steamids': steamid})
         data1 = (await resp.json())['response']['players'][0]
     # variables that go into the message we're sending.
     name = data1['personaname']
@@ -352,8 +368,7 @@ async def status(ctx, id=None):
 
 
 # ---- game info ----
-@bot.command(cls=PinguuCommand)
-@log_who
+@command()
 async def gameinfo(ctx, *, content):
     """
     Provides information about a game or AppId
@@ -400,7 +415,7 @@ async def gameinfo(ctx, *, content):
 
     embed = discord.Embed(title=game_name, color=random.randint(0, 0xFFFFFF))
     embed.add_field(name='Game Title:', value=game_name, inline=False)
-    embed.add_field(name='Appid:', value=app_id, inline=False)
+    embed.add_field(name='Appid:', value=str(app_id), inline=False)
     if cc_players is not None:
         embed.add_field(name='Total Current Players:', value=f'{cc_players:,}',
                         inline=False)
@@ -418,6 +433,51 @@ async def gameinfo(ctx, *, content):
 
     await ctx.send(embed=embed)
 
+
+@commands.is_owner()
+@command(name='update',
+         brief='Executes git-pull on the repository, and DMs you the output.')
+async def git_pull(ctx, *extra_args):
+    """
+    If you call this with the `--force` flag, then we will force-update and
+    overwrite the existing code with the upstream branch.
+
+    This blocks the event loop.
+    """
+    try:
+        if '--force' in extra_args:
+            output: str = subprocess.check_output(
+                [
+                    '/bin/bash', '-c',
+                    'git fetch --all && git reset --hard origin/'   
+                    '$(git rev-parse --abbrev-ref HEAD); exit 0'
+                ],
+                stderr=subprocess.STDOUT,
+                universal_newlines=True)
+        else:
+            output: str = subprocess.check_output(
+                ['/bin/bash', '-c', 'git pull; exit 0'],
+                stderr=subprocess.STDOUT,
+                universal_newlines=True
+            )
+
+    except BaseException:
+        import traceback
+        output = traceback.format_exc()
+
+    pag = commands.Paginator()
+    for line in output.split('\n'):
+        pag.add_line(line)
+
+    for page in pag.pages:
+        await ctx.author.send(page)
+
+
+@commands.is_owner()
+@command(name='stop', brief='Stops the bot.')
+async def stop(ctx):
+    await ctx.send('Goodbye.')
+    await bot.logout()
 
 # ---- I need this to run the bot lol----
 bot.run(discord_token)
