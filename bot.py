@@ -24,7 +24,10 @@ logger = logging.getLogger('Pinguu')
 
 
 # ---- bot prefix ----
-bot = commands.Bot(command_prefix='!!')
+bot = commands.Bot(
+    command_prefix='!!',
+    owner_id=95721165607141376
+)
 
 
 def command(**kwargs):
