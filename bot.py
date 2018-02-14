@@ -75,14 +75,12 @@ async def invite(ctx):
 
 # ----test ping command ----
 @commands.is_owner()
-@command(
-    brief='Prints the latency.',
-    hidden=True)
+@command(brief='Prints the latency.')
 async def ping(ctx):
     """
     Tests that the bot is not dead.
     """
-    await ctx.send('Pong @ ' + ctx.bot.latency + 'ms.')
+    await ctx.send(f'Pong @ {int(ctx.bot.latency * 1000):,} ms.')
 
 
 # ---- first iteration of profile-placeholder ----
