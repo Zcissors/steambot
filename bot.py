@@ -60,30 +60,29 @@ discord_token = token['d-token']
 bot_token = token['b-token']
 
 
+@commands.is_owner()
 @command()
 async def invite(ctx):
     """
     A command to get an invite link for the bot.
     """
-    await ctx.send('here is a link you can use to invite me to your Discord '
-                   'guild! \N{SMILING FACE WITH OPEN MOUTH}'
-                   ' \nhttps://discordapp.com/oauth2/authorize?client_id'
-                   f'={bot_token}&scope=bot')
+    await ctx.author.send(
+        'here is a link you can use to invite me to your Discord '
+        'guild! \N{SMILING FACE WITH OPEN MOUTH}'
+        ' \nhttps://discordapp.com/oauth2/authorize?client_id'
+        f'={bot_token}&scope=bot')
 
 
 # ----test ping command ----
+@commands.is_owner()
 @command(
-    name='ping',  # this overrides the function name if you wanted
-    aliases=['pong', 'beep'],
-    brief='Ping pong hong kong long dong',
-    hidden=True,
-    enabled=False)
-async def ass_feck(ctx):
+    brief='Prints the latency.',
+    hidden=True)
+async def ping(ctx):
     """
-    This is your docstring for the ass_feck function.
-    Discord.py uses this as an extended description.
+    Tests that the bot is not dead.
     """
-    await ctx.send('Pong')
+    await ctx.send('Pong @ ' + ctx.bot.latency + 'ms.')
 
 
 # ---- first iteration of profile-placeholder ----
