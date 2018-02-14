@@ -82,7 +82,7 @@ async def ping(ctx):
     """
     Tests that the bot is not dead.
     """
-    await ctx.send('Pong @ ' + ctx.bot.latency + 'ms.')
+    await ctx.send(f'Pong @ {ctx.bot.latency} ms.')
 
 
 # ---- first iteration of profile-placeholder ----
