@@ -14,7 +14,6 @@ import typing
 import discord
 import discord.ext.commands as commands
 
-import bot
 import pinguucmds
 
 
@@ -834,7 +833,7 @@ class HelpCog:
         """
         self.bot = bot
 
-    @bot.command(
+    @pinguucmds.command(
         name='help',
         brief='Shows help for the available bot commands.',
         usage='|command|group command')
@@ -872,7 +871,7 @@ class HelpCog:
 
             bk += await self.gen_spec_page(ctx, cmd)
 
-            if page_index is None and query in cmd.qualified_names:
+            if page_index is None and query == cmd.qualified_name:
                 # I assume checking equality of commands is slower
                 # than checking for is None each iteration.
                 page_index = i + offset
@@ -956,7 +955,7 @@ class HelpCog:
         # noinspection PyUnresolvedReferences
         can_run = await cmd.can_run(ctx)
 
-        if isinstance(cmd, pinguucmds.PinguuCommand):
+        if isinstance(cmd, pinguucmds.PinguuGroup):
             async def sub_cmd_map(c):
                 c = await self.format_command_name(c, ctx, is_full=True)
                 c = f'• {c}'
@@ -1071,7 +1070,7 @@ class HelpCog:
         if cmd.hidden:
             name = f'*{name}*'
 
-        if isinstance(cmd, pinguucmds.PinguuCommand) and getattr(cmd, 'commands'):
+        if isinstance(cmd, pinguucmds.PinguuGroup) and getattr(cmd, 'commands'):
             name = f'{name}\*'
 
         return name
