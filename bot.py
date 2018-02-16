@@ -64,7 +64,7 @@ bot_token = token['b-token']
 
 
 @commands.is_owner()
-@command()
+@command(brief='Make an invite link.')
 async def invite(ctx):
     """
     A command to get an invite link for the bot.
@@ -93,6 +93,7 @@ async def ping(ctx):
 async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided.
+
     !!profile steamid/customurl
     """
     if steamid is None:
@@ -288,6 +289,7 @@ async def simpprofile(ctx, steamid=None):
 async def avatar(ctx, steamid=None):
     """
     Shows the avatar of a given steamid/profile.
+
     !!avatar username
     """
     if steamid is None:
@@ -332,6 +334,7 @@ async def avatar(ctx, steamid=None):
 async def status(ctx, steamid=None):
     """
     Gets the current status of a requested profile.
+
     !!status steamid/customurl
     """
     if steamid is None:
@@ -377,6 +380,7 @@ async def status(ctx, steamid=None):
 async def gameinfo(ctx, *, content):
     """
     Provides information about a game or AppId.
+
     !!gameinfo appid/Game-Name
     """
     if content.isdigit():
