@@ -28,7 +28,8 @@ bot = commands.Bot(
     command_prefix='!!',
     owner_id=95721165607141376
 )
-
+bot.remove_command('help')
+bot.load_extension('pinguuhelp')
 
 def command(**kwargs):
     kwargs.setdefault('cls', pinguucmds.PinguuCommand)
