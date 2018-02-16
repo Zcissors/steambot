@@ -895,7 +895,7 @@ class HelpCog:
         :param ctx: the command context.
         """
 
-        desc = (f'(c) Vee 2018 all rights reserved\n\n ')
+        desc = (f'(c) Vee 2018 all rights reserved\n\n')
 
         embed = discord.Embed(
             title=f'Helpful Information',
@@ -956,7 +956,7 @@ class HelpCog:
         # noinspection PyUnresolvedReferences
         can_run = await cmd.can_run(ctx)
 
-        if isinstance(cmd, bot.PinguuCommand):
+        if isinstance(cmd, pinguucmds.PinguuCommand):
             async def sub_cmd_map(c):
                 c = await self.format_command_name(c, ctx, is_full=True)
                 c = f'• {c}'
@@ -1071,7 +1071,7 @@ class HelpCog:
         if cmd.hidden:
             name = f'*{name}*'
 
-        if isinstance(cmd, bot.PinguuCommand) and getattr(cmd, 'commands'):
+        if isinstance(cmd, pinguucmds.PinguuCommand) and getattr(cmd, 'commands'):
             name = f'{name}\*'
 
         return name
