@@ -3,10 +3,12 @@ Wasn't happy with the default help manager for the bot, so I stole
 the one Neko uses. This has a whole load of dependencies though, so they
 are all going to be dumped in this file until I can be bothered to rewrite
 it properly.
+
+- Espeonageon (taken from the first iteration of the Neko bot. This module
+    is deprecated, buggy and poorly engineered. Please don't hate me).
 """
 import asyncio
 import collections
-import inspect
 import re
 import traceback
 import typing
@@ -817,10 +819,15 @@ async def should_show(cmd, ctx):
     if ctx.author.id == ctx.bot.owner_id:
         return True
     else:
-        can_run = await cmd.can_run(ctx)
-        is_hidden = cmd.hidden
-        is_enabled = cmd.enabled
-        return can_run and not is_hidden and is_enabled
+        # noinspection PyBroadException
+        try:
+            can_run = await cmd.can_run(ctx)
+        except BaseException:
+            return False
+        else:
+            is_hidden = cmd.hidden
+            is_enabled = cmd.enabled
+            return can_run and not is_hidden and is_enabled
 
 
 class HelpCog:
@@ -894,14 +901,10 @@ class HelpCog:
         :param ctx: the command context.
         """
 
-        desc = (f'(c) Vee 2018 all rights reserved\n\n')
-
         embed = discord.Embed(
             title=f'Helpful Information',
-            description='\n\n'.join([
-                f'Created by: Vee',
-                f'(c) Vee 2018 all rights reserved',
-            ]),
+            description='Created by: Vee\n\n'
+                        '(c) Vee 2018 all rights reserved',
             color=default_color
         )
 

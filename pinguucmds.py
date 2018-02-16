@@ -18,7 +18,12 @@ class PinguuMixin:
         self.before_invoke(self.before_invoke_do)
 
     @staticmethod
-    async def before_invoke_do(ctx):
+    async def before_invoke_do(*args):
+        if len(args) == 1:
+            cog, ctx = None, args[0]
+        else:
+            cog, ctx = args
+
         cmd: 'PinguuMixin' = ctx.command
         # Logs when the command is invoked.
         cmd.logger.info(
@@ -28,12 +33,12 @@ class PinguuMixin:
             f'{ctx.message.content}')
 
     async def on_error(self, *args):
+
         # Makes sure this will work in cogs also.
         if len(args) == 3:
-            cog, ctx, error = args
+            _unused_cog, ctx, error = args
         else:
             ctx, error = args
-            cog = None
 
         self.logger.warning(f'{type(error).__name__}: {str(error)!r} occurred.')
         traceback.print_exception(type(error), error, error.__traceback__)
@@ -51,6 +56,7 @@ class PinguuCommand(commands.Command, PinguuMixin):
 
 
 class PinguuGroup(commands.Group, PinguuMixin):
+
     def __init__(self, name, callback, **kwargs):
         commands.Group.__init__(self, name, callback, **kwargs)
         PinguuMixin.__init__(self)
