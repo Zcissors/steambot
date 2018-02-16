@@ -89,10 +89,11 @@ async def ping(ctx):
 
 
 # ---- first iteration of profile-placeholder ----
-@command()
+@command(brief='Displays the profile of the user belonging to the steamid/customurl provided')
 async def profile(ctx, steamid=None):
     """
-    Displays the profile of the user belonging to the steamid provided
+    Displays the profile of the user belonging to the steamid provided.
+    !!profile steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -283,10 +284,11 @@ async def simpprofile(ctx, steamid=None):
 
 
 # --- getting a profile picture/avatar ---
-@command()
+@command(brief='Shows the avatar of a given steamid/profile')
 async def avatar(ctx, steamid=None):
     """
-    Shows the avatar of a given steamid.
+    Shows the avatar of a given steamid/profile.
+    !!avatar username
     """
     if steamid is None:
         await ctx.send('\N{FACE WITH OPEN MOUTH AND COLD SWEAT} '
@@ -326,10 +328,11 @@ async def avatar(ctx, steamid=None):
 
 
 # ---- profile status ----
-@command()
+@command(brief='Gets the current status of a requested profile.')
 async def status(ctx, steamid=None):
     """
     Gets the current status of a requested profile.
+    !!status steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -370,10 +373,11 @@ async def status(ctx, steamid=None):
 
 
 # ---- game info ----
-@command()
+@command(brief='Provides information about a game.')
 async def gameinfo(ctx, *, content):
     """
-    Provides information about a game or AppId
+    Provides information about a game or AppId.
+    !!gameinfo appid/Game-Name
     """
     if content.isdigit():
         app_id = int(content)
