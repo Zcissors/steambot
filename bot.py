@@ -22,7 +22,6 @@ logging.basicConfig(level='INFO')
 # DEBUG < INFO < WARNING < ERROR < FATAL
 logger = logging.getLogger('Pinguu')
 
-
 # ---- bot prefix ----
 bot = commands.Bot(
     command_prefix='!!',
@@ -31,6 +30,7 @@ bot = commands.Bot(
 bot.remove_command('help')
 bot.load_extension('pinguuhelp')
 
+
 def command(**kwargs):
     kwargs.setdefault('cls', pinguucmds.PinguuCommand)
 
@@ -38,6 +38,7 @@ def command(**kwargs):
         cmd = commands.command(**kwargs)(coro)
         bot.add_command(cmd)
         return cmd
+
     return decorator
 
 
@@ -48,6 +49,7 @@ def group(**kwargs):
         cmd = commands.command(**kwargs)(coro)
         bot.add_command(cmd)
         return cmd
+
     return decorator
 
 
@@ -260,9 +262,6 @@ async def simpprofile(ctx, steamid=None):
     # Variables that go into the message we're sending.
     # Store the info you want in variables
     name = data1['personaname']
-    profile_url = data1['profileurl']
-    avatar_img = data1['avatarfull']
-    created_on = str(time.gmtime(data1['timecreated']))
     badge_count = len(data2['badges'])
     xp = data2['player_xp']
     level = data2['player_level']
@@ -276,10 +275,10 @@ async def simpprofile(ctx, steamid=None):
         # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
 
-    output_str = (f'Profile Name: {name}, state: {state}, Current Steam Level: '
-                  f'{level:,}, Number of Badges: {badge_count:,}, xp: {xp:,}, '
-                  f'XP Needed To Reach Next Level: {xp_needed:,}, Country: '
-                  f'{country_emote}.')
+    output_str = (f"Profile Name: {name}, state: {state}, Current Steam Level: "
+                  f"{level:,}, Number of Badges: {badge_count:,}, xp: {xp:,}, "
+                  f"XP Needed To Reach Next Level: {xp_needed:,}, Country: "
+                  f"{country_emote}.")
     await ctx.send(output_str)
 
 
@@ -447,12 +446,13 @@ async def git_pull(ctx, *extra_args):
 
     This blocks the event loop.
     """
+    # noinspection PyBroadException
     try:
         if '--force' in extra_args:
             output: str = subprocess.check_output(
                 [
                     '/bin/bash', '-c',
-                    'git fetch --all && git reset --hard origin/'   
+                    'git fetch --all && git reset --hard origin/'
                     '$(git rev-parse --abbrev-ref HEAD); exit 0'
                 ],
                 stderr=subprocess.STDOUT,
@@ -481,6 +481,7 @@ async def git_pull(ctx, *extra_args):
 async def stop(ctx):
     await ctx.send('Goodbye.')
     await bot.logout()
+
 
 # ---- I need this to run the bot lol----
 bot.run(discord_token)
