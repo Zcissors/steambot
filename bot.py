@@ -66,7 +66,7 @@ bot_token = token['b-token']
 @bot.listen()
 async def on_ready():
     await bot.change_presence(
-        game=discord.Game(name="!!help for help :1234:")
+        game=discord.Game(name="!!help")
     )
 
 @commands.is_owner()
