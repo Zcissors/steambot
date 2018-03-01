@@ -176,24 +176,32 @@ async def profile(ctx, steamid=None):
     embed.set_thumbnail(url=avatar_img)
     if name is not None:
         embed.add_field(name='Profile Name:', value=name, inline=False)
+
     if real_name is not None:
         embed.add_field(name='Real Name:', value=real_name, inline=False)
+
     if current_game is not None:
         embed.add_field(name='Currently In Game:', value=current_game,
                         inline=False)
+
     if level is not None:
         embed.add_field(name='Current Steam Level:', value=f'{level:,}',
                         inline=False)
+
     if badge_count:
         embed.add_field(name='Number of Badges:', value=f'{badge_count}',
                         inline=False)
+
     if xp is not None:
         embed.add_field(name='Current XP', value=f'{xp:,}', inline=False)
+
     if xp_needed is not None:
         embed.add_field(name='XP Needed To Reach Next Level',
-                        value=f'{xp_needed:,}', inline=False)
+                        value=f'{xp_needed;,} to reach {level +1}', inline=False)
+
     if created_on is not None:
         embed.add_field(name='Profile created:', value=created_on, inline=True)
+
     if 'loccountrycode' in data1:
         country_emote = 'Country:  ' + chr(
             0x1f1e6 + ord(data1['loccountrycode'][0]) - ord('A')) + chr(
