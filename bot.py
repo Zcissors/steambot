@@ -91,7 +91,7 @@ async def ping(ctx):
     """
     Tests that the bot is not dead.
     """
-    await ctx.send(f'Pong @ {ctx.bot.latency} ms.')
+    await ctx.send(f'Pong @ {ctx.bot.latency * 1000:,.2f} ms.')
 
 
 # ---- first iteration of profile-placeholder ----
@@ -197,7 +197,7 @@ async def profile(ctx, steamid=None):
 
     if xp_needed is not None:
         embed.add_field(name='XP Needed To Reach Next Level',
-                        value=f'{xp_needed:,} to reach {level +1}', inline=False)
+                        value=f'{xp_needed:,} to reach Level {level +1}', inline=False)
 
     if created_on is not None:
         embed.add_field(name='Profile created:', value=created_on, inline=True)
