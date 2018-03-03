@@ -24,7 +24,7 @@ logger = logging.getLogger('Pinguu')
 
 # ---- bot prefix ----
 bot = commands.Bot(
-    command_prefix='!!',
+    command_prefix='!',
     owner_id=95721165607141376
 )
 bot.remove_command('help')
@@ -66,7 +66,7 @@ bot_token = token['b-token']
 @bot.listen()
 async def on_ready():
     await bot.change_presence(
-        game=discord.Game(name="!!help")
+        game=discord.Game(name=f"{bot.command_prefix}help")
     )
 
 @commands.is_owner()
@@ -383,11 +383,22 @@ async def status(ctx, steamid=None):
                                  params={'key': steam_key, 'steamids': steamid})
         data1 = (await resp.json())['response']['players'][0]
     # variables that go into the message we're sending.
+
+    if 'gameextrainfo' in data1:
+        current_game = data1['gameextrainfo']
+    else:
+        current_game = None
+
     name = data1['personaname']
     state = profilestates.states[data1['personastate']]
 
     print(f'{name} is {state}.')
-    await ctx.send(f'{name} is currently {state}.')
+    if 'gameextrainfo' in data1:
+        current_game = data1['gameextrainfo']
+        await ctx.send(f'{name} is currently {state} and playing {current_game}.')
+    else:
+        current_game = None
+        await ctx.send(f'{name} is currently {state}.')
 
 
 # ---- game info ----
