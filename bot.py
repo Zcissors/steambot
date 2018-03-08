@@ -197,7 +197,8 @@ async def profile(ctx, steamid=None):
 
     if xp_needed is not None:
         embed.add_field(name='XP Needed To Reach Next Level',
-                        value=f'{xp_needed:,} XP to reach Level {level +1:,}',
+                        value=f'{xp_needed:,} XP to reach Level {level +1:,} '
+                              f'({xp_needed // 100} badges.)',
                         inline=False)
 
     if created_on is not None:
