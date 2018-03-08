@@ -69,6 +69,7 @@ async def on_ready():
         game=discord.Game(name=f"{bot.command_prefix}help")
     )
 
+
 @commands.is_owner()
 @command(brief='Make an invite link.')
 async def invite(ctx):
@@ -95,7 +96,8 @@ async def ping(ctx):
 
 
 # ---- first iteration of profile-placeholder ----
-@command(brief='Displays the profile of the user belonging to the steamid/customurl provided')
+@command(
+    brief='Displays the profile of the user belonging to the steamid/customurl provided')
 async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided.
@@ -385,18 +387,14 @@ async def status(ctx, steamid=None):
         data1 = (await resp.json())['response']['players'][0]
     # variables that go into the message we're sending.
 
-    if 'gameextrainfo' in data1:
-        current_game = data1['gameextrainfo']
-    else:
-        current_game = None
-
     name = data1['personaname']
     state = profilestates.states[data1['personastate']]
 
     print(f'{name} is {state}.')
     if 'gameextrainfo' in data1:
         current_game = data1['gameextrainfo']
-        await ctx.send(f'{name} is currently {state} and playing {current_game}.')
+        await ctx.send(
+            f'{name} is currently {state} and playing {current_game}.')
     else:
         current_game = None
         await ctx.send(f'{name} is currently {state}.')
