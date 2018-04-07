@@ -67,7 +67,10 @@ bot_token = token['b-token']
 @bot.listen()
 async def on_ready():
     await bot.change_presence(
-        game=discord.Game(name=f"{bot.command_prefix}help")
+        #game=...
+        # 7/4/2018 - 404 - Changed from `game' to `activity' as the API has
+        #                  been changed.
+        activity=discord.Game(name=f"{bot.command_prefix}help")
     )
 
 
