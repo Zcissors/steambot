@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.6
+# -*- coding: utf-8 -*-
 import asyncio
 import logging
 import json
@@ -12,9 +13,9 @@ import discord
 import requests
 from discord.ext import commands
 
-import profilestates
-import appids
-import pinguucmds
+from . import profilestates
+from . import appids
+from . import pinguucmds
 
 appid_cache = appids.AppIdCacher()
 
@@ -28,7 +29,7 @@ bot = commands.Bot(
     owner_id=95721165607141376
 )
 bot.remove_command('help')
-bot.load_extension('pinguuhelp')
+bot.load_extension('pinguu.pinguuhelp')
 
 
 def command(**kwargs):
@@ -66,7 +67,10 @@ bot_token = token['b-token']
 @bot.listen()
 async def on_ready():
     await bot.change_presence(
-        game=discord.Game(name=f"{bot.command_prefix}help")
+        #game=...
+        # 7/4/2018 - 404 - Changed from `game' to `activity' as the API has
+        #                  been changed.
+        activity=discord.Game(name=f"{bot.command_prefix}help")
     )
 
 
@@ -97,7 +101,8 @@ async def ping(ctx):
 
 # ---- first iteration of profile-placeholder ----
 @command(
-    brief='Displays the profile of the user belonging to the steamid/customurl provided')
+    brief='Displays the profile of the user belonging to the steamid/customurl'
+          ' provided')
 async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided.

@@ -1,5 +1,11 @@
 #!/bin/bash
 
-source venv/bin/activate
+if (uname | grep -iq mingw); then
+    source venv/Scripts/activate
+    winpty python.exe -3.6 -m pinguu
+else
+    source venv/bin/activate
+    python3.6 -m pinguu
+fi
 
-python3.6 bot.py
+exit $?

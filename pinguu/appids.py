@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.6
+# -*- coding: utf-8 -*-
 import asyncio
 import aiohttp
 import logging
@@ -44,3 +46,4 @@ class AppIdCacher:
         name = name.lower().strip()
         with await self._lock:
             return self._name2appid.get(name, default)
+
