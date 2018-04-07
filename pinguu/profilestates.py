@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.6
+# -*- coding: utf-8 -*-
 # The user's current status. 0 - Offline, 1 - Online, 2 - Busy, 3 - Away,
 # 4 - Snooze, 5 - looking to trade, 6 - looking to play. If the player's
 # profile is private, this will always be "0", except if the user has set
