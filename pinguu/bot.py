@@ -25,7 +25,7 @@ logger = logging.getLogger('Pinguu')
 
 # ---- bot prefix ----
 bot = commands.Bot(
-    command_prefix='!!',
+    command_prefix='!sb',
     owner_id=95721165607141376
 )
 bot.remove_command('help')
