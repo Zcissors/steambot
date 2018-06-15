@@ -107,7 +107,7 @@ async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided.
 
-    !!profile steamid/customurl
+    !sbprofile steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -137,16 +137,22 @@ async def profile(ctx, steamid=None):
         url2 = (
             'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
         )
-
-        resp1, resp2 = await asyncio.gather(
-            session.get(url1, params={'key': steam_key, 'steamids': steamid}),
-            session.get(url2, params={'key': steam_key, 'steamid': steamid})
+        url3 = (
+            'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/'
         )
-        data1, data2 = await asyncio.gather(
-            resp1.json(), resp2.json()
+
+        resp1, resp2, resp3 = await asyncio.gather(
+            session.get(url1, params={'key': steam_key, 'steamids': steamid}),
+            session.get(url2, params={'key': steam_key, 'steamid': steamid}),
+            session.get(url3, params={'key': steam_key, 'steamid': steamid})
+        )
+        data1, data2, data3 = await asyncio.gather(
+            resp1.json(), resp2.json(), resp3.json()
         )
         data1 = data1['response']['players'][0]
         data2 = data2['response']
+        data3 = data3['response']['games']
+
     # Variables that go into the message we're sending.
     # Store the info you want in variables
     name = data1['personaname']
@@ -175,6 +181,10 @@ async def profile(ctx, steamid=None):
     level = data2.get('player_level')
     xp_needed = data2.get('player_xp_needed_to_level_up')
 
+    sum = 0
+    for game in data3['response']['games']:
+        sum += game['playtime_forever']
+
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
     # ---- embed stuff ----
@@ -182,25 +192,22 @@ async def profile(ctx, steamid=None):
                           colour=state.colour)
     embed.set_thumbnail(url=avatar_img)
     if name is not None:
-        embed.add_field(name='Profile Name:', value=name, inline=False)
+        embed.add_field(name='Profile Name:', value=name)
 
     if real_name is not None:
-        embed.add_field(name='Real Name:', value=real_name, inline=False)
+        embed.add_field(name='Real Name:', value=real_name)
 
     if current_game is not None:
-        embed.add_field(name='Currently In Game:', value=current_game,
-                        inline=False)
+        embed.add_field(name='Currently In Game:', value=current_game)
 
     if level is not None:
-        embed.add_field(name='Current Steam Level:', value=f'{level:,}',
-                        inline=False)
+        embed.add_field(name='Current Steam Level:', value=f'{level:,}')
 
     if badge_count:
-        embed.add_field(name='Number of Badges:', value=f'{badge_count:,}',
-                        inline=False)
+        embed.add_field(name='Number of Badges:', value=f'{badge_count:,}')
 
     if xp is not None:
-        embed.add_field(name='Current XP', value=f'{xp:,}', inline=False)
+        embed.add_field(name='Current XP', value=f'{xp:,}')
 
     if xp_needed is not None:
         embed.add_field(name='XP Needed To Reach Next Level',
@@ -209,18 +216,18 @@ async def profile(ctx, steamid=None):
                         inline=False)
 
     if created_on is not None:
-        embed.add_field(name='Profile created:', value=created_on, inline=True)
+        embed.add_field(name='Profile created:', value=created_on)
 
     if 'loccountrycode' in data1:
-        country_emote = 'Country:  ' + chr(
+        country_emote = 'Country: ' + chr(
             0x1f1e6 + ord(data1['loccountrycode'][0]) - ord('A')) + chr(
             0x1f1e6 + ord(data1['loccountrycode'][1]) - ord('A')) + ' '
-        embed.add_field(name=country_emote, value='\u200b', inline=False)
+        embed.add_field(name=country_emote, value='\u200b')
+
     if len(embed.fields) == 0:
         embed.add_field(name='Private profile',
                         value='I can\'t read any info about you. \nDo you '
                               'have a private profile?')
-    embed.set_footer(text="Made with \N{HEAVY BLACK HEART} by Vee#4012")
     # NO! THIS IS FOR DISCORD.PY V0
     # await self.bot.say(embed=embed)
     # do this:
@@ -238,7 +245,7 @@ async def avatar(ctx, steamid=None):
     """
     Shows the avatar of a given steamid/profile.
 
-    !!avatar username
+    !sbavatar username
     """
     if steamid is None:
         await ctx.send('\N{FACE WITH OPEN MOUTH AND COLD SWEAT} '
@@ -286,7 +293,7 @@ async def status(ctx, steamid=None):
     """
     Gets the current status of a requested profile.
 
-    !!status steamid/customurl
+    !sbstatus steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -337,9 +344,9 @@ async def status(ctx, steamid=None):
 @command(brief='Provides information about a game.')
 async def gameinfo(ctx, *, content):
     """
-    Provides information about a game or AppId.
+    Provides information about a game given the title or Appid.
 
-    !!gameinfo appid/Game-Name
+    !sbgameinfo appid/name of game
     """
     if content.isdigit():
         app_id = int(content)
@@ -397,7 +404,6 @@ async def gameinfo(ctx, *, content):
         embed.add_field(name='Store Page:',
                         value=f'http://steamcommunity.com/app/{app_id}',
                         inline=False)
-    embed.set_footer(text="Made with \N{HEAVY BLACK HEART} by Vee#4012")
 
     await ctx.send(embed=embed)
 
