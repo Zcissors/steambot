@@ -188,7 +188,6 @@ async def profile(ctx, steamid=None):
     else:
         tpt = None
 
-
     if data3 is not None:
         apt = 0
         for game in data3:
@@ -396,11 +395,13 @@ async def game(ctx, *, content):
     release_date = data1['release_date']['date']
     developers = data1['developers'][0]
     store = data1['support_info']['url']
+    header_img = data1['header_image']
     cc_players = data2['player_count']
     # app_id holds the app id now
     # game_name holds the game name string now
 
     embed = discord.Embed(title=game_name, color=random.randint(0, 0xFFFFFF))
+    embed.set_image(url=header_img)
     embed.add_field(name='Game Title:', value=game_name)
     embed.add_field(name='Appid:', value=str(app_id))
     if cc_players is not None:
