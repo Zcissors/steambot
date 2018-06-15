@@ -67,7 +67,7 @@ bot_token = token['b-token']
 @bot.listen()
 async def on_ready():
     await bot.change_presence(
-        #game=...
+        # game=...
         # 7/4/2018 - 404 - Changed from `game' to `activity' as the API has
         #                  been changed.
         activity=discord.Game(name=f"{bot.command_prefix}help")
@@ -151,7 +151,6 @@ async def profile(ctx, steamid=None):
         data1 = data1['response']['players'][0]
         data2 = data2['response']
 
-
     # Variables that go into the message we're sending.
     # Store the info you want in variables
     name = data1['personaname']
@@ -180,7 +179,6 @@ async def profile(ctx, steamid=None):
     level = data2.get('player_level')
     xp_needed = data2.get('player_xp_needed_to_level_up')
 
-
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
     # ---- embed stuff ----
@@ -202,8 +200,8 @@ async def profile(ctx, steamid=None):
                         inline=False)
 
     if badge_count:
-        embed.add_field(name='Number of Badges:', value=f'{badge_count:,}'
-                        , inline=False)
+        embed.add_field(name='Number of Badges:', value=f'{badge_count:,}',
+                        inline=False)
 
     if xp is not None:
         embed.add_field(name='Current XP', value=f'{xp:,}', inline=False)
