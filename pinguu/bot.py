@@ -269,6 +269,7 @@ async def avatar(ctx, steamid=None):
         resp = await session.get(url1,
                                  params={'key': steam_key, 'steamids': steamid})
         data1 = (await resp.json())['response']['players'][0]
+        state = profilestates.states[data1['personastate']]
 
     # variables that go into the message we're sending.
     avatar_img = data1['avatarfull']
