@@ -137,11 +137,8 @@ async def profile(ctx, steamid=None):
         url2 = (
             'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
         )
-        url3 = (
-            'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/'
-        )
 
-        resp1, resp2, resp3 = await asyncio.gather(
+        resp1, resp2 = await asyncio.gather(
             session.get(url1, params={'key': steam_key, 'steamids': steamid}),
             session.get(url2, params={'key': steam_key, 'steamid': steamid}),
         )
@@ -232,9 +229,6 @@ async def profile(ctx, steamid=None):
           badge_count, 'Created on:', created_on)
     print(created_on)
     await ctx.send(embed=embed)
-
-
-
 
 
 # --- getting a profile picture/avatar ---
@@ -334,7 +328,6 @@ async def status(ctx, steamid=None):
         await ctx.send(
             f'{name} is currently {state} and playing {current_game}.')
     else:
-        current_game = None
         await ctx.send(f'{name} is currently {state}.')
 
 
