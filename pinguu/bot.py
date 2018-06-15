@@ -137,25 +137,30 @@ async def profile(ctx, steamid=None):
         url2 = (
             'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
         )
+        url3 = (
+            'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/'
+        )
 
-        resp1, resp2 = await asyncio.gather(
+        resp1, resp2, resp3 = await asyncio.gather(
             session.get(url1, params={'key': steam_key, 'steamids': steamid}),
             session.get(url2, params={'key': steam_key, 'steamid': steamid}),
+            session.get(url3, params={'key': steam_key, 'steamid': steamid})
         )
-        data1, data2 = await asyncio.gather(
-            resp1.json(), resp2.json()
+        data1, data2, data3 = await asyncio.gather(
+            resp1.json(), resp2.json(), resp3.json()
         )
         data1 = data1['response']['players'][0]
         data2 = data2['response']
+        data3 = data3['response'].get('games')
 
     # Variables that go into the message we're sending.
     # Store the info you want in variables
     name = data1['personaname']
     profile_url = data1['profileurl']
-    avatar_img = data1['avatarfull']
+    avatar_img = data1['avatarmedium']
     # ----
     if 'timecreated' in data1:
-        created_on = time.strftime('%A, %d %B %Y at %I:%M%p',
+        created_on = time.strftime('%A, %d %B %Y ',
                                    time.gmtime(data1['timecreated']))
     else:
         created_on = None
@@ -176,6 +181,21 @@ async def profile(ctx, steamid=None):
     level = data2.get('player_level')
     xp_needed = data2.get('player_xp_needed_to_level_up')
 
+    if data3 is not None:
+        tpt = 0
+        for game in data3:
+            tpt += game['playtime_forever']
+    else:
+        tpt = None
+
+
+    if data3 is not None:
+        apt = 0
+        for game in data3:
+            apt += game.get('playtime_2weeks', 0)
+    else:
+        apt = None
+
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
     # ---- embed stuff ----
@@ -183,40 +203,42 @@ async def profile(ctx, steamid=None):
                           colour=state.colour)
     embed.set_thumbnail(url=avatar_img)
     if name is not None:
-        embed.add_field(name='Profile Name:', value=name)
+        embed.add_field(name='Profile Name', value=name)
 
     if real_name is not None:
-        embed.add_field(name='Real Name:', value=real_name, inline=False)
+        embed.add_field(name='Real Name', value=real_name)
 
     if current_game is not None:
-        embed.add_field(name='Currently In Game:', value=current_game,
-                        inline=False)
+        embed.add_field(name='Currently In Game', value=current_game)
 
     if level is not None:
-        embed.add_field(name='Current Steam Level:', value=f'{level:,}',
-                        inline=False)
+        embed.add_field(name='Current Steam Level', value=f'{level:,}')
 
     if badge_count:
-        embed.add_field(name='Number of Badges:', value=f'{badge_count:,}',
-                        inline=False)
+        embed.add_field(name='Number of Badges', value=f'{badge_count:,}')
 
     if xp is not None:
-        embed.add_field(name='Current XP', value=f'{xp:,}', inline=False)
+        embed.add_field(name='Current XP', value=f'{xp:,}')
+
+    if data3 is not None:
+        embed.add_field(name='Total Playtime:', value=f'{tpt/60:,.0f} hours')
+
+    if data3 is not None:
+        embed.add_field(name='Playtime Last 2 Weeks:',
+                        value=f'{apt/60:,.0f} hours')
 
     if xp_needed is not None:
         embed.add_field(name='XP Needed To Reach Next Level',
-                        value=f'{xp_needed:,} XP to reach Level {level +1:,} '
-                              f'({xp_needed // 100} badges.)',
-                        inline=False)
-
-    if created_on is not None:
-        embed.add_field(name='Profile created:', value=created_on, inline=False)
+                        value=f'{xp_needed:,} XP ({xp_needed // 100} badges.)')
 
     if 'loccountrycode' in data1:
         country_emote = 'Country: ' + chr(
             0x1f1e6 + ord(data1['loccountrycode'][0]) - ord('A')) + chr(
             0x1f1e6 + ord(data1['loccountrycode'][1]) - ord('A')) + ' '
-        embed.add_field(name=country_emote, value='\u200b', inline=False)
+        embed.add_field(name=country_emote, value='\u200b')
+
+    if created_on is not None:
+        embed.add_field(name='Profile created', value=created_on)
 
     if len(embed.fields) == 0:
         embed.add_field(name='Private profile',
@@ -227,7 +249,6 @@ async def profile(ctx, steamid=None):
     # do this:
     print('Name:', name, 'State:', state, 'Level:', level, 'Badge count:',
           badge_count, 'Created on:', created_on)
-    print(created_on)
     await ctx.send(embed=embed)
 
 
