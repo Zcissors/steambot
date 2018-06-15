@@ -905,8 +905,9 @@ class HelpCog:
 
         embed = discord.Embed(
             title=f'Helpful Information',
-            description='Created by: Vee\n\n'
-                        '(c) Vee 2018 all rights reserved',
+            description='Created by: Vee\n'
+                        'This bot is was made to provide\n'
+                        'information about Steam accounts and games',
             color=default_color
         )
 
@@ -923,7 +924,7 @@ class HelpCog:
 
         embed.add_field(
             name='Available commands',
-            value='\n'.join(f'`\N{HEAVY MINUS SIGN}` {c}' for c in cmds),
+            value='\n'.join(f'`!sb` {c}' for c in cmds),
             inline=False
         )
 
