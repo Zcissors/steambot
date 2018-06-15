@@ -413,7 +413,7 @@ async def game(ctx, *, content):
         embed.add_field(name='Description', value=clean_text, inline=False)
     if store:
         embed.add_field(name='Store Page:',
-                        value=f'http://store.steamcommunity.com/app/{app_id}',
+                        value=f'https://store.steamcommunity.com/app/{app_id}',
                         inline=False)
 
     await ctx.send(embed=embed)
