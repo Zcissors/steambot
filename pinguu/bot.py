@@ -275,7 +275,7 @@ async def avatar(ctx, steamid=None):
     # gstate = profilestates.states[data1['personastate']]
 
     embed = discord.Embed()
-    embed.set_image(url=f'{avatar_img}')
+    embed.set_image(url=avatar_img)
     await ctx.send(embed=embed)
 
 
