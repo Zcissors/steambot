@@ -354,7 +354,7 @@ async def status(ctx, steamid=None):
 
 # ---- game info ----
 @command(brief='Provides information about a game.')
-async def gameinfo(ctx, *, content):
+async def game(ctx, *, content):
     """
     Provides information about a game given the title or Appid.
 
@@ -401,20 +401,19 @@ async def gameinfo(ctx, *, content):
     # game_name holds the game name string now
 
     embed = discord.Embed(title=game_name, color=random.randint(0, 0xFFFFFF))
-    embed.add_field(name='Game Title:', value=game_name, inline=False)
-    embed.add_field(name='Appid:', value=str(app_id), inline=False)
+    embed.add_field(name='Game Title:', value=game_name)
+    embed.add_field(name='Appid:', value=str(app_id))
     if cc_players is not None:
-        embed.add_field(name='Total Current Players:', value=f'{cc_players:,}',
-                        inline=False)
+        embed.add_field(name='Total Current Players:', value=f'{cc_players:,}')
     if developers is not None:
-        embed.add_field(name='Developed by: ', value=developers, inline=False)
+        embed.add_field(name='Developed by: ', value=developers)
     if release_date is not None:
-        embed.add_field(name='Released:', value=release_date, inline=False)
+        embed.add_field(name='Released:', value=release_date)
     if clean_text:
         embed.add_field(name='Description', value=clean_text, inline=False)
     if store:
         embed.add_field(name='Store Page:',
-                        value=f'http://steamcommunity.com/app/{app_id}',
+                        value=f'http://store.steamcommunity.com/app/{app_id}',
                         inline=False)
 
     await ctx.send(embed=embed)
