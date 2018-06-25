@@ -10,12 +10,12 @@ import time
 import aiohttp
 import bs4
 import discord
-import steamidconv
 from discord.ext import commands
 
 from . import profilestates
 from . import appids
 from . import pinguucmds
+from . import steamidconv
 
 appid_cache = appids.AppIdCacher()
 
