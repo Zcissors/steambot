@@ -10,7 +10,7 @@ import time
 import aiohttp
 import bs4
 import discord
-import requests
+import steamidconv
 from discord.ext import commands
 
 from . import profilestates
@@ -111,8 +111,8 @@ async def profile(ctx, steamid=None):
     """
     if steamid is None:
         await ctx.send(
-            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to "
-            "work.")
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64/"
+            "customurl to work.")
         return
     async with aiohttp.ClientSession() as session:
         if not steamid.isdigit():
@@ -197,6 +197,7 @@ async def profile(ctx, steamid=None):
 
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
+    steam_id = steamidconv.community_to_steam(int(steamid))
     # ---- embed stuff ----
     embed = discord.Embed(title=f'Steam Profile of {name}', url=profile_url,
                           colour=state.colour)
@@ -357,7 +358,7 @@ async def game(ctx, *, content):
     """
     Provides information about a game given the title or Appid.
 
-    !sbgameinfo appid/name of game
+    !sbgame appid/name of game
     """
     if content.isdigit():
         app_id = int(content)
@@ -412,10 +413,9 @@ async def game(ctx, *, content):
         embed.add_field(name='Released:', value=release_date)
     if clean_text:
         embed.add_field(name='Description', value=clean_text, inline=False)
-    if store:
-        embed.add_field(name='Store Page:',
-                        value=f'https://store.steampowered.com/app/{app_id}',
-                        inline=False)
+    embed.add_field(name='Store Page:',
+                    value=f'https://store.steampowered.com/app/{app_id}',
+                    inline=False)
 
     await ctx.send(embed=embed)
 
