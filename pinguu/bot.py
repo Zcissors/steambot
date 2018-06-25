@@ -197,7 +197,7 @@ async def profile(ctx, steamid=None):
 
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
-    steam_id = steamidconv.community_to_steam(int(steamid))
+    # steam_id = steamidconv.community_to_steam(int(steamid))
     # ---- embed stuff ----
     embed = discord.Embed(title=f'Steam Profile of {name}', url=profile_url,
                           colour=state.colour)
