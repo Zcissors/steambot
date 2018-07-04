@@ -924,7 +924,7 @@ class HelpCog:
 
         embed.add_field(
             name='Available commands',
-            value='\n'.join(f'`!sb` {c}' for c in cmds),
+            value='\n'.join(f'`!sl`{c}' for c in cmds),
             inline=False
         )
 
