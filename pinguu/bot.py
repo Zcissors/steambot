@@ -107,7 +107,7 @@ async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided.
 
-    !sbprofile steamid/customurl
+    !slprofile steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -258,7 +258,7 @@ async def avatar(ctx, steamid=None):
     """
     Shows the avatar of a given steamid/profile.
 
-    !sbavatar username
+    !slavatar steamid/customurl
     """
     if steamid is None:
         await ctx.send('\N{FACE WITH OPEN MOUTH AND COLD SWEAT} '
@@ -306,7 +306,7 @@ async def status(ctx, steamid=None):
     """
     Gets the current status of a requested profile.
 
-    !sbstatus steamid/customurl
+    !slstatus steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -358,7 +358,7 @@ async def game(ctx, *, content):
     """
     Provides information about a game given the title or Appid.
 
-    !sbgame appid/name of game
+    !slgame appid/name of game
     """
     if content.isdigit():
         app_id = int(content)
@@ -370,7 +370,9 @@ async def game(ctx, *, content):
             app_id)
 
     if app_id is None or game_name is None:
-        await ctx.send('No match')
+        await ctx.send("""I can't find that game,
+        did you type it right?
+        is it on steam?""")
         return
     url1 = (
         'http://store.steampowered.com/api/appdetails'
