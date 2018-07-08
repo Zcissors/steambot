@@ -140,18 +140,23 @@ async def profile(ctx, steamid=None):
         url3 = (
             'https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/'
         )
+        url4 = (
+            'https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/'
+        )
 
-        resp1, resp2, resp3 = await asyncio.gather(
+        resp1, resp2, resp3, resp4 = await asyncio.gather(
             session.get(url1, params={'key': steam_key, 'steamids': steamid}),
             session.get(url2, params={'key': steam_key, 'steamid': steamid}),
-            session.get(url3, params={'key': steam_key, 'steamid': steamid})
+            session.get(url3, params={'key': steam_key, 'steamid': steamid}),
+            session.get(url4, params={'key': steam_key, 'steamids': steamid})
         )
-        data1, data2, data3 = await asyncio.gather(
-            resp1.json(), resp2.json(), resp3.json()
+        data1, data2, data3, data4 = await asyncio.gather(
+            resp1.json(), resp2.json(), resp3.json(), resp4.json()
         )
         data1 = data1['response']['players'][0]
         data2 = data2['response']
         data3 = data3['response'].get('games')
+        data4 = data4['players'][0]
 
     # Variables that go into the message we're sending.
     # Store the info you want in variables
@@ -195,6 +200,22 @@ async def profile(ctx, steamid=None):
     else:
         apt = None
 
+    if data4['VACBanned'] == 'false':
+        VACBanned = '\N{CROSS MARK}'
+    else:
+        VACBanned = '\N{WHITE HEAVY CHECK MARK}'
+
+    if data4['CommunityBanned'] == 'false':
+        CommunityBanned = '\N{CROSS MARK}'
+    else:
+        CommunityBanned = '\N{WHITE HEAVY CHECK MARK}'
+
+    if data4['EconomyBan'] == 'none':
+        EconomyBan = '\N{WHITE HEAVY CHECK MARK}'
+    else:
+        EconomyBan = '\N{CROSS MARK}'
+
+
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
     # steam_id = steamidconv.community_to_steam(int(steamid))
@@ -228,7 +249,7 @@ async def profile(ctx, steamid=None):
                         value=f'{apt/60:,.0f} hours')
 
     if xp_needed is not None:
-        embed.add_field(name='XP Needed To Reach Next Level',
+        embed.add_field(name='To Reach Next Level',
                         value=f'{xp_needed:,} XP ({xp_needed // 100} badges.)')
 
     if 'loccountrycode' in data1:
@@ -239,6 +260,13 @@ async def profile(ctx, steamid=None):
 
     if created_on is not None:
         embed.add_field(name='Profile created', value=created_on)
+
+    embed.add_field(name='Community Status', value=f'**Community status**:'
+                                                   f' {CommunityBanned}\n '
+                                                   f'**VAC Status**:'
+                                                   f' {VACBanned}\n '
+                                                   f'**Market Status**:'
+                                                   f' {EconomyBan}')
 
     if len(embed.fields) == 0:
         embed.add_field(name='Private profile',
@@ -370,9 +398,7 @@ async def game(ctx, *, content):
             app_id)
 
     if app_id is None or game_name is None:
-        await ctx.send("""I can't find that game,
-        did you type it right?
-        is it on steam?""")
+        await ctx.send('No match')
         return
     url1 = (
         'http://store.steampowered.com/api/appdetails'
