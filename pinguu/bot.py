@@ -15,7 +15,7 @@ from discord.ext import commands
 from . import profilestates
 from . import appids
 from . import pinguucmds
-# from . import steamidconv
+from . import steamidconv
 
 appid_cache = appids.AppIdCacher()
 
@@ -107,7 +107,7 @@ async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided.
 
-    !slprofile steamid/customurl
+    !sbprofile steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -218,7 +218,7 @@ async def profile(ctx, steamid=None):
 
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
-    # steam_id = steamidconv.community_to_steam(int(steamid))
+    steam_id = steamidconv.community_to_steam(int(steamid))
     # ---- embed stuff ----
     embed = discord.Embed(title=f'Steam Profile of {name}', url=profile_url,
                           colour=state.colour)
@@ -238,8 +238,8 @@ async def profile(ctx, steamid=None):
     if badge_count:
         embed.add_field(name='Number of Badges', value=f'{badge_count:,}')
 
-    if xp is not None:
-        embed.add_field(name='Current XP', value=f'{xp:,}')
+    # if xp is not None:
+        # embed.add_field(name='Current XP', value=f'{xp:,}')
 
     if data3 is not None:
         embed.add_field(name='Total Playtime:', value=f'{tpt/60:,.0f} hours')
@@ -266,7 +266,10 @@ async def profile(ctx, steamid=None):
                                                    f'**VAC Status**:'
                                                    f' {VACBanned}\n '
                                                    f'**Market Status**:'
-                                                   f' {EconomyBan}')
+                                                   f' {EconomyBan}',
+                    inline=False)
+    embed.add_field(name="SteamID's", value=f'**SteamID64**:\n{steamid}\n'
+                                            f'**SteamID**:\n{steam_id}')
 
     if len(embed.fields) == 0:
         embed.add_field(name='Private profile',
@@ -386,7 +389,7 @@ async def game(ctx, *, content):
     """
     Provides information about a game given the title or Appid.
 
-    !slgame appid/name of game
+    !sbgame appid/name of game
     """
     if content.isdigit():
         app_id = int(content)
@@ -423,9 +426,18 @@ async def game(ctx, *, content):
     clean_text = bs4.BeautifulSoup(desc, 'html.parser').text
     release_date = data1['release_date']['date']
     developers = data1['developers'][0]
-    store = data1['support_info']['url']
     header_img = data1['header_image']
     cc_players = data2['player_count']
+
+
+    if 'price_overview' in data1:
+        price = data1['price_overview']['final']
+        price = price / 100
+        price = f'${price} USD'
+    else:
+        price = 'Free'
+
+    # price = round(price, 2)
     # app_id holds the app id now
     # game_name holds the game name string now
 
@@ -437,6 +449,10 @@ async def game(ctx, *, content):
         embed.add_field(name='Total Current Players:', value=f'{cc_players:,}')
     if developers is not None:
         embed.add_field(name='Developed by: ', value=developers)
+    if price is not None:
+        embed.add_field(name='Price: ', value=f'{price}')
+    else:
+        embed.add_field(name='Price:', value='Free')
     if release_date is not None:
         embed.add_field(name='Released:', value=release_date)
     if clean_text:
