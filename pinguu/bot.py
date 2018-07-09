@@ -121,7 +121,7 @@ async def profile(ctx, steamid=None):
     """
     Displays the profile of the user belonging to the steamid provided.
 
-    !sbprofile steamid/customurl
+    !slprofile steamid/customurl
     """
     if steamid is None:
         await ctx.send(
@@ -397,13 +397,76 @@ async def status(ctx, steamid=None):
         await ctx.send(f'{name} is currently {state}.')
 
 
+# ---- Level command ---
+@command(brief='Provides a small info card with a players level')
+async def level(ctx, steamid=None):
+    """
+    Shows the avatar of a given steamid/profile.
+
+    !slavatar username
+    """
+    if steamid is None:
+        await ctx.send(
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64/"
+            "customurl to work.")
+        return
+    async with aiohttp.ClientSession() as session:
+        if not steamid.isdigit():
+            url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+            params = {
+                'key': steam_key,
+                'format': 'json',
+                'url_type': 1,
+                'vanityurl': steamid
+            }
+            resp = await session.get(url, params=params)
+            data = await resp.json()
+
+            if data['response']['success'] != 1:
+                return await ctx.send(data['response']['message'])
+            steamid = data['response']['steamid']
+
+        # url of the API we're getting stuff from
+        url1 = (
+            'https://api.steampowered.com/ISteamUser/GetPlayer'
+            'Summaries/v2/'
+        )
+        url2 = (
+            'https://api.steampowered.com/IPlayerService/GetBadges/v1/'
+        )
+
+        resp1, resp2 = await asyncio.gather(
+            session.get(url1, params={'key': steam_key, 'steamids': steamid}),
+            session.get(url2, params={'key': steam_key, 'steamid': steamid})
+        )
+        data1, data2 = await asyncio.gather(
+            resp1.json(), resp2.json()
+        )
+        data1 = data1['response']['players'][0]
+        data2 = data2['response']
+
+        state = profilestates.states[data1['personastate']]
+
+    # variables that go into the message we're sending.
+    name = data1['personaname']
+    avatar_img = data1['avatarfull']
+    level = data2.get('player_level')
+
+
+
+    embed = discord.Embed(colour=state.colour)
+    embed.set_thumbnail(url=avatar_img)
+    embed.add_field(name=f'{name}', value=f'Level: {level}', inline=False)
+    await ctx.send(embed=embed)
+
+
 # ---- game info ----
 @command(brief='Provides information about a game.')
 async def game(ctx, *, content):
     """
     Provides information about a game given the title or Appid.
 
-    !sbgame appid/name of game
+    !slgame appid/name of game
     """
     if content.isdigit():
         app_id = int(content)
