@@ -75,6 +75,20 @@ async def on_ready():
 
 
 @commands.is_owner()
+@bot.command(brief='list servers')
+async def servers(ctx):
+    pag = commands.Paginator()
+
+    for i, guild in enumerate(ctx.bot.guilds):
+        owner = guild.owner
+
+        pag.add_line(f'{i + 1:04}  {guild} | {owner}')
+
+    for page in pag.pages:
+        await ctx.send(page)
+
+
+@commands.is_owner()
 @command(brief='Make an invite link.')
 async def invite(ctx):
     """
