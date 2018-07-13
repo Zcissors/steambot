@@ -508,9 +508,10 @@ async def game(ctx, *, content):
 
 
     if 'price_overview' in data1:
-        price = data1['price_overview']['final']
-        price = price / 100
-        price = f'${price} USD'
+        data = data1['price_overview']
+        price = data['final'] / 100
+        currency = data['currency']
+        price = f'{price} {currency}'
     else:
         price = 'Free'
 
