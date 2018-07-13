@@ -82,7 +82,7 @@ async def servers(ctx):
     for i, guild in enumerate(ctx.bot.guilds):
         owner = guild.owner
 
-        pag.add_line(f'{i + 1:04}  {guild} | {owner}')
+        pag.add_line(f'{i + 1:04}  {guild} | {owner} | {guild.id}')
 
     for page in pag.pages:
         await ctx.send(page)
