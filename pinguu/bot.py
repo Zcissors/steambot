@@ -264,7 +264,8 @@ async def profile(ctx, steamid=None):
 
     if xp_needed is not None:
         embed.add_field(name='To Reach Next Level',
-                        value=f'{xp_needed:,} XP ({xp_needed // 100} badges.)')
+                        value=f'{xp_needed:,}'
+                              f' XP ({xp_needed // 100+1} badges.)')
 
     if 'loccountrycode' in data1:
         country_emote = 'Country: ' + chr(
