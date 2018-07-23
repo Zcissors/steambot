@@ -450,8 +450,11 @@ async def level(ctx, steamid=None):
 
     # variables that go into the message we're sending.
     name = data1['personaname']
+    profileurl = data1['profileurl']
     avatar_img = data1['avatarfull']
     level = data2.get('player_level')
+    xp = data2.get('player_xp')
+    link = f'[{name}]({profileurl})'
 
 
 
