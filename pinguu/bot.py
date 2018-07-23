@@ -252,8 +252,8 @@ async def profile(ctx, steamid=None):
     if badge_count:
         embed.add_field(name='Number of Badges', value=f'{badge_count:,}')
 
-    # if xp is not None:
-        # embed.add_field(name='Current XP', value=f'{xp:,}')
+    if xp is not None:
+        embed.add_field(name='Current XP', value=f'{xp:,}')
 
     if data3 is not None:
         embed.add_field(name='Total Playtime:', value=f'{tpt/60:,.0f} hours')
@@ -455,9 +455,10 @@ async def level(ctx, steamid=None):
 
 
 
-    embed = discord.Embed(colour=state.colour)
+    embed = discord.Embed(title=f'{name}', url=f'{profileurl}', colour=state.colour)
     embed.set_thumbnail(url=avatar_img)
-    embed.add_field(name=f'{name}', value=f'Level: {level}', inline=False)
+    embed.add_field(name='Level:', value=f'{level}', inline=False)
+    embed.add_field(name='XP:', value=f'{xp:,}', inline=True)
     await ctx.send(embed=embed)
 
 
