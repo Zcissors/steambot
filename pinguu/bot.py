@@ -240,8 +240,8 @@ async def profile(ctx, steamid=None):
     if name is not None:
         embed.add_field(name='Profile Name', value=name)
 
-
-    if real_name is not None:
+    real_name = real_name.strip()
+    if real_name:
         embed.add_field(name='Real Name', value=real_name)
 
     if current_game is not None:
@@ -308,8 +308,9 @@ async def avatar(ctx, steamid=None):
     !slavatar steamid/customurl
     """
     if steamid is None:
-        await ctx.send('\N{FACE WITH OPEN MOUTH AND COLD SWEAT} '
-                       'I need a steamid64 to work.')
+        await ctx.send(
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64/"
+            "customurl to work.")
         return
 
     async with aiohttp.ClientSession() as session:
@@ -357,8 +358,8 @@ async def status(ctx, steamid=None):
     """
     if steamid is None:
         await ctx.send(
-            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64 to "
-            "work.")
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64/"
+            "customurl to work.")
         return
 
     async with aiohttp.ClientSession() as session:
