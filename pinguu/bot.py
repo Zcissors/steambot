@@ -189,7 +189,7 @@ async def profile(ctx, steamid=None):
     if 'realname' in data1:
         real_name = data1['realname']
     else:
-        real_name = None
+        real_name = '\N{ZERO WIDTH SPACE}'
     # ----
     if 'gameextrainfo' in data1:
         current_game = data1['gameextrainfo']
@@ -214,15 +214,15 @@ async def profile(ctx, steamid=None):
     else:
         apt = None
 
-    if data4['VACBanned'] == 'false':
-        VACBanned = '\N{CROSS MARK}'
-    else:
-        VACBanned = '\N{WHITE HEAVY CHECK MARK}'
-
     if data4['CommunityBanned'] == 'false':
         CommunityBanned = '\N{CROSS MARK}'
     else:
         CommunityBanned = '\N{WHITE HEAVY CHECK MARK}'
+
+    if data4['VACBanned'] == 'false':
+        VACBanned = '\N{CROSS MARK}'
+    else:
+        VACBanned = '\N{WHITE HEAVY CHECK MARK}'
 
     if data4['EconomyBan'] == 'none':
         EconomyBan = '\N{WHITE HEAVY CHECK MARK}'
@@ -547,6 +547,76 @@ async def game(ctx, *, content):
                     inline=False)
 
     await ctx.send(embed=embed)
+
+# ---- steamladder position ---
+@command(
+    brief="Displays the requested players "
+          "position on the steamladder.com ladder"
+)
+async def position(ctx, steamid=None):
+    """Displays the requested players position on the steamladder.com ladder"""
+    if steamid is None:
+        await ctx.send(
+            "\N{FACE WITH OPEN MOUTH AND COLD SWEAT} I need a steamid64/"
+            "customurl to work.")
+        return
+    async with aiohttp.ClientSession() as session:
+        if not steamid.isdigit():
+            url = 'https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/'
+            params = {
+                'key': steam_key,
+                'format': 'json',
+                'url_type': 1,
+                'vanityurl': steamid
+            }
+            resp = await session.get(url, params=params)
+            data = await resp.json()
+
+            if data['response']['success'] != 1:
+                return await ctx.send(data['response']['message'])
+            steamid = data['response']['steamid']
+
+        # url of the API we're getting stuff from
+        url1 = (
+            'https://api.steampowered.com/ISteamUser/GetPlayer'
+            'Summaries/v2/'
+        )
+        url2 = f'https://steamladder.com/api/profile/{steamid}/{ladder_key}'
+
+        resp1, resp2 = await asyncio.gather(
+            session.get(url1, params={'key': steam_key, 'steamids': steamid}),
+            session.get(url2)
+        )
+        data1, data2 = await asyncio.gather(
+            resp1.json(), resp2.json()
+        )
+        data1 = data1['response']['players'][0]
+
+        state = profilestates.states[data1['personastate']]
+
+    # variables that go into the message we're sending.
+    name = data1['personaname']
+    profileurl = data2['url']
+    avatar_img = data1['avatarfull']
+    ladderpos = data2['rank']['worldwide_xp']
+    laddergc = data2['rank']['worldwide_games']
+    ladderpt = data2['rank']['worldwide_playtime']
+    ladderupdt = data2['rank']['updated']
+
+    embed = discord.Embed(title=f'{name}', url=f'{profileurl}',
+                          colour=random.randint(0, 0xFFFFFF))
+    embed.set_thumbnail(url=avatar_img)
+    embed.add_field(name='World Ranks:', value=f'Level Rank: #{ladderpos:,}\n'
+                                               f'Playtime Rank: #{ladderpt:,}\n'
+                                               f'Game Count Rank: #{laddergc:,}'
+                    , inline=False)
+    embed.set_footer(text="Info collected from steamladder.com")
+    await ctx.send(embed=embed)
+
+
+
+
+
 
 
 @commands.is_owner()
