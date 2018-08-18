@@ -62,7 +62,7 @@ with open('token.json') as fp:
 steam_key = token['s-key']
 discord_token = token['d-token']
 bot_token = token['b-token']
-
+ladder_key = token['ladder-key']
 
 @bot.listen()
 async def on_ready():
