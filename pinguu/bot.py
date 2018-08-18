@@ -310,8 +310,10 @@ async def profile(ctx, steamid=None):
     if name is not None:
         embed.add_field(name='Profile Name', value=name)
 
-    real_name = real_name.strip()
-    if real_name:
+    if real_name is not None:
+        real_name = real_name.strip()
+        embed.add_field(name='Real Name', value=real_name)
+    else:
         embed.add_field(name='Real Name', value=real_name)
 
     if current_game is not None:
