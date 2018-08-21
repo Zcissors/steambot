@@ -284,21 +284,9 @@ async def profile(ctx, steamid=None):
     else:
         apt = None
 
-    if data4['CommunityBanned'] == 'false':
-        CommunityBanned = '\N{CROSS MARK}'
-    else:
-        CommunityBanned = '\N{WHITE HEAVY CHECK MARK}'
-
-    if data4['VACBanned'] == 'false':
-        VACBanned = '\N{CROSS MARK}'
-    else:
-        VACBanned = '\N{WHITE HEAVY CHECK MARK}'
-
-    if data4['EconomyBan'] == 'none':
-        EconomyBan = '\N{WHITE HEAVY CHECK MARK}'
-    else:
-        EconomyBan = '\N{CROSS MARK}'
-
+    CommunityBanned = data4['CommunityBanned']
+    VACBanned = data4['VACBanned']
+    EconomyBan = data4['EconomyBan']
 
     # Takes an int and gets the profile state object
     state = profilestates.states[data1['personastate']]
@@ -313,8 +301,7 @@ async def profile(ctx, steamid=None):
     if real_name is not None:
         real_name = real_name.strip()
         embed.add_field(name='Real Name', value=real_name)
-    else:
-        embed.add_field(name='Real Name', value=real_name)
+
 
     if current_game is not None:
         embed.add_field(name='Currently In Game', value=current_game)
@@ -349,11 +336,11 @@ async def profile(ctx, steamid=None):
     if created_on is not None:
         embed.add_field(name='Profile created', value=created_on)
 
-    embed.add_field(name='Community Status', value=f'**Community status**:'
+    embed.add_field(name='Community Status', value=f'**Community Banned**:'
                                                    f' {CommunityBanned}\n '
-                                                   f'**VAC Status**:'
+                                                   f'**VAC Banned**:'
                                                    f' {VACBanned}\n '
-                                                   f'**Market Status**:'
+                                                   f'**Market Bans**:'
                                                    f' {EconomyBan}',
                     inline=False)
     embed.add_field(name="SteamID's", value=f'**SteamID64**:\n{steamid}\n'
