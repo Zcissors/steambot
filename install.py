@@ -6,7 +6,7 @@ Installs any dependencies
 import pip
 
 
-with open('dependencies.txt') as fp:
+with open('requirements.txt') as fp:
     dependencies = fp.readlines()
 
 
