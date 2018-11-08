@@ -115,7 +115,7 @@ async def ping(ctx):
     await ctx.send(f'Pong @ {ctx.bot.latency * 1000:,.2f} ms.')
 
 
-# --- steamladder position ---
+# ---- steamladder position ----
 @command(
     brief="Displays the requested players "
           "position on the steamladder.com ladder"
@@ -172,7 +172,7 @@ async def position(ctx, steamid=None):
     embed.set_footer(text="Data collected from steamladder.com")
     await ctx.send(embed=embed)
 
-
+# ---- steamladder ladder ----
 @command(brief="Displays the Top 10 profiles on the steamladder.com ladder")
 async def ladder(ctx):
     async with aiohttp.ClientSession() as session:
@@ -183,8 +183,14 @@ async def ladder(ctx):
         data = resp.json()['ladder']
 
         embed = discord.Embed(title='Steamladder Top 10 Profiles',
-                              url='https://steamladder.com/', color=random.randint(0, 0xFFFFFF))
-        embed.set_footer(text="Data collected from steamladder.com")
+                              url='https://steamladder.com/',
+                              color=random.randint(0, 0xFFFFFF))
+        embed.set_thumbnail(
+            url="https://steamladder.com/static/img/new_logo.png"
+        )
+        embed.set_footer(
+            text="Data collected from steamladder.com"
+        )
 
         for i, value in enumerate(data):
             if i >= 10:
