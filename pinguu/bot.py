@@ -6,6 +6,7 @@ import json
 import random
 import subprocess
 import time
+import requests
 
 import aiohttp
 import bs4
@@ -143,31 +144,23 @@ async def position(ctx, steamid=None):
             steamid = data['response']['steamid']
 
         # url of the API we're getting stuff from
-        url1 = (
-            'https://api.steampowered.com/ISteamUser/GetPlayer'
-            'Summaries/v2/'
-        )
-        url2 = f'https://steamladder.com/api/profile/{steamid}/{ladder_key}'
 
-        resp1, resp2 = await asyncio.gather(
-            session.get(url1, params={'key': steam_key, 'steamids': steamid}),
-            session.get(url2)
+        url = requests.get(
+            f'https://steamladder.com/api/v1/profile/{steamid}/',
+            headers={'Authorization': f'Token {ladder_key}'}
         )
-        data1, data2 = await asyncio.gather(
-            resp1.json(), resp2.json()
-        )
-        data1 = data1['response']['players'][0]
 
-        state = profilestates.states[data1['personastate']]
+
+        data = url.json()
 
     # variables that go into the message we're sending.
-    name = data1['personaname']
-    profileurl = data2['url']
-    avatar_img = data1['avatarfull']
-    ladderpos = data2['rank']['worldwide_xp']
-    laddergc = data2['rank']['worldwide_games']
-    ladderpt = data2['rank']['worldwide_playtime']
-    ladderupdt = data2['rank']['updated']
+    name = data['steam_user']['steam_name']
+    profileurl = data['steam_user']['steamladder_url']
+    avatar_img = data['steam_user']['steam_avatar_src']
+    ladderpos = data['ladder_rank']['worldwide_xp']
+    laddergc = data['ladder_rank']['worldwide_games']
+    ladderpt = data['ladder_rank']['worldwide_playtime']
+
 
     embed = discord.Embed(title=f'{name}', url=f'{profileurl}',
                           colour=random.randint(0, 0xFFFFFF))
@@ -176,11 +169,47 @@ async def position(ctx, steamid=None):
                                                f'Playtime Rank: #{ladderpt:,}\n'
                                                f'Game Count Rank: #{laddergc:,}'
                     , inline=False)
-    embed.set_footer(text="Info collected from steamladder.com")
+    embed.set_footer(text="Data collected from steamladder.com")
     await ctx.send(embed=embed)
 
 
+@command(brief="Displays the Top 10 profiles on the steamladder.com ladder")
+async def ladder(ctx):
+    async with aiohttp.ClientSession() as session:
+        resp = requests.get(
+            f'https://steamladder.com/api/v1/ladder/xp/',
+            headers={'Authorization': f'Token {ladder_key}'}
+        )
+        data = resp.json()['ladder']
 
+        embed = discord.Embed(title='Steamladder Top 10 Profiles',
+                              url='https://steamladder.com/', color=random.randint(0, 0xFFFFFF))
+        embed.set_footer(text="Data collected from steamladder.com")
+
+        for i, value in enumerate(data):
+            if i >= 10:
+                break
+
+            display_name = value['steam_user']['steam_name']
+            url = value['steam_user']['steamladder_url']
+            country_code = value['steam_user']['steam_country_code']
+            link = f'[{display_name}]({url})'
+            games_count = value['steam_stats']['games']
+            badge_count = value['steam_stats']['badges']
+            level = value['steam_stats']['level']
+            xp = value['steam_stats']['xp']
+
+
+            string = f'{link}  \n' \
+                     f'Country: {country_code} \n' \
+                     f' Level: {level} \n' \
+                     f' XP: {xp:,} \n'
+                     # f' Games: {games_count} \n' \
+                     # f' Badges: {badge_count}'
+
+
+            embed.add_field(name=f'#{i+1}', value=string, inline=True)
+        await ctx.send(embed=embed)
 
 
 # ---- getting profile and player info ----
