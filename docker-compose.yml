@@ -1,0 +1,10 @@
+version: "2"
+services:
+  pinguu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - .:/pinguu:rw
+    container_name: pinguu
