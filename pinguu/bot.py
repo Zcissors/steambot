@@ -547,30 +547,35 @@ async def level(ctx, steamid=None):
     name = data1['personaname']
     profileurl = data1['profileurl']
     avatar_img = data1['avatarfull']
-    level = data2['player_level']
-    xp = data2['player_xp']
-    link = f'[{name}]({profileurl})'
-
-    current_total_xp = data2['player_xp']
-    remaining_to_level_up = data2['player_xp_needed_to_level_up']
-    current_level_xp_base = data2['player_xp_needed_current_level']
-
-    xp_points_since_level_up = current_total_xp - current_level_xp_base
-
-    level_total_xp = xp_points_since_level_up + remaining_to_level_up
-    level_progress = xp_points_since_level_up / level_total_xp
-    max_bar_width = 20
-    bar_length = int(level_progress * max_bar_width)
-
-    space = max_bar_width - bar_length
-
-    bar = '[' + ('#' * bar_length) + (u'\u2002' * space) + ']'
-
 
     embed = discord.Embed(title=f'{name}', url=f'{profileurl}', colour=state.colour)
     embed.set_thumbnail(url=avatar_img)
-    embed.add_field(name='Level Info', value=f'\nLevel: {level} || XP: {xp:,}\n '
-                    f'`{bar}` {level_progress*100:.0F}%', inline=False)
+
+    if 'player_level' in data2 is not None:
+        level = data2['player_level']
+    if 'player_xp' in data2 is not None:
+        xp = data2['player_xp']
+        # ---- bar calculation
+        current_total_xp = data2['player_xp']
+        remaining_to_level_up = data2['player_xp_needed_to_level_up']
+        current_level_xp_base = data2['player_xp_needed_current_level']
+
+        xp_points_since_level_up = current_total_xp - current_level_xp_base
+
+        level_total_xp = xp_points_since_level_up + remaining_to_level_up
+        level_progress = xp_points_since_level_up / level_total_xp
+        max_bar_width = 20
+        bar_length = int(level_progress * max_bar_width)
+
+        space = max_bar_width - bar_length
+
+        bar = '[' + ('#' * bar_length) + (u'\u2002' * space) + ']'
+    # ---- end bar calculation
+
+        embed.add_field(name='Level Info', value=f'\nLevel: {level} || XP: {xp:,}\n '
+                        f'`{bar}` {level_progress*100:.0F}%', inline=False)
+    else:
+        embed.add_field(name='Level Info', value='\nPrivate', inline=False)
     await ctx.send(embed=embed)
 
 
