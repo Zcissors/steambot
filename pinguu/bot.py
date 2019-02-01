@@ -75,6 +75,11 @@ async def on_ready():
         activity=discord.Game(name=f"{bot.command_prefix}help")
     )
 
+@bot.listen()
+async def on_reaction_add(reaction, user):
+    if(user.id==bot.owner_id):
+        if reaction.emoji == "❎":
+            await reaction.message.delete()
 
 @commands.is_owner()
 @bot.command(brief='list servers')
