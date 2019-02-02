@@ -95,6 +95,8 @@ async def servers(ctx):
         await ctx.send(page)
 
 
+
+
 @commands.is_owner()
 @command(brief='Make an invite link.')
 async def invite(ctx):
@@ -119,6 +121,11 @@ async def ping(ctx):
     """
     await ctx.send(f'Pong @ {ctx.bot.latency * 1000:,.2f} ms.')
 
+# ---- say command ----
+@commands.is_owner()
+@command(hidden=True)
+async def say(ctx, message):
+    await ctx.send(message)
 
 # ---- steamladder position ----
 @command(
