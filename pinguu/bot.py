@@ -124,7 +124,7 @@ async def ping(ctx):
 # ---- say command ----
 @commands.is_owner()
 @command(hidden=True)
-async def say(ctx, message):
+async def say(ctx, *, message):
     await ctx.send(message)
 
 # ---- steamladder position ----
