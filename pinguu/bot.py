@@ -76,10 +76,11 @@ async def on_ready():
     )
 
 @bot.listen()
-async def on_reaction_add(reaction, user):
-    if(user.id==bot.owner_id):
-        if reaction.emoji == "❎":
-            await reaction.message.delete()
+async def on_reaction_add(reaction, user: discord.User):
+    cross = "\N{NEGATIVE SQUARED CROSS MARK}"
+    if all((user.id == bot.owner_id, reaction.message.author == bot.user,
+ reaction.emoji == cross)) :
+        await reaction.message.delete()
 
 @commands.is_owner()
 @bot.command(brief='list servers')
