@@ -212,18 +212,19 @@ async def ladder(ctx):
             url = value['steam_user']['steamladder_url']
             country_code = value['steam_user']['steam_country_code']
             link = f'[{display_name}]({url})'
-            games_count = value['steam_stats']['games']
-            badge_count = value['steam_stats']['badges']
             level = value['steam_stats']['level']
             xp = value['steam_stats']['xp']
-
+            if country_code is not None:
+                country_code = 'Country: ' + chr(
+                    0x1f1e6 + ord(value['steam_user']['steam_country_code'][0]) - ord('A')) + chr(
+                    0x1f1e6 + ord(value['steam_user']['steam_country_code'][1]) - ord('A')) + ' '
+            else:
+                country_code = f'Country: {discord.utils.get(bot.emojis, name="missingflag")}'
 
             string = f'{link}  \n' \
-                     f'Country: {country_code} \n' \
+                     f'{country_code} \n' \
                      f' Level: {level} \n' \
                      f' XP: {xp:,} \n'
-                     # f' Games: {games_count} \n' \
-                     # f' Badges: {badge_count}'
 
 
             embed.add_field(name=f'#{i+1}', value=string, inline=True)
