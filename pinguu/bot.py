@@ -223,7 +223,7 @@ async def ladder(ctx):
 
             string = f'{link}  \n' \
                      f'{country_code} \n' \
-                     f' Level: {level} \n' \
+                     f' Level: {level:,} \n' \
                      f' XP: {xp:,} \n'
 
 
