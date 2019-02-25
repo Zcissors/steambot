@@ -15,4 +15,4 @@ RUN mkdir -p /pinguu && \
     source .venv/bin/activate && ls /pinguu -Rahl && \
     python -m pip install -Ur requirements.txt
 
-CMD bash steambot
+ENTRYPOINT source .venv/bin/activate && python -m pinguu
