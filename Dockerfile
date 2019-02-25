@@ -1,16 +1,20 @@
-FROM python:3.6-alpine
+FROM python:3-alpine
 
 LABEL maintainer="Vee"
-LABEL version="1.0-SNAPSHOT"
+LABEL version="1.1-SNAPSHOT"
 LABEL description="pinguu"
 
 VOLUME ["/pinguu"]
 COPY requirements.txt requirements.txt
-RUN mkdir -p /pinguu && \
+RUN apk add bash
+RUN bash -c "
+    mkdir -p /pinguu && \
     apk add bash zlib-dev py3-pip git gcc coreutils libc-dev && \
-    python3 -m pip install virtualenv && \
-    python3 -m venv .venv && \
+    python -m pip install -U pip && \
+    python -m pip install virtualenv && \
+    python -m venv .venv && \
     source .venv/bin/activate && ls /pinguu -Rahl && \
-    python3 -m pip install -r requirements.txt
+    python -m pip install -Ur requirements.txt
+    "
 
-CMD bash -c "source /.venv/bin/activate && cd /pinguu && python3 -m pinguu"
+CMD bash steambot

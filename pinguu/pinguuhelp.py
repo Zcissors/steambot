@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Wasn't happy with the default help manager for the bot, so I stole
@@ -16,9 +16,8 @@ import traceback
 import typing
 
 import discord
-import discord.ext.commands as commands
 
-from . import pinguucmds
+from . import pinguucmds as commands
 
 
 # Dodger blue.
@@ -52,7 +51,7 @@ def capitalise(string):
     # We don't use a single index, as if the string is zero length, this
     # would raise an out of bounds exception. Instead, using ranges of indexes
     # will only output the maximum length string possible.
-    return string[0:1].upper() + string[1:]
+    return string[:1].upper() + string[1:]
 
 
 # Americans GTFO
@@ -832,7 +831,7 @@ async def should_show(cmd, ctx):
             return can_run and not is_hidden and is_enabled
 
 
-class HelpCog:
+class HelpCog(commands.Cog):
     """Provides the inner methods with access to bot directly."""
 
     def __init__(self, bot):
@@ -842,7 +841,7 @@ class HelpCog:
         """
         self.bot = bot
 
-    @pinguucmds.command(
+    @commands.command(
         name='help',
         brief='Shows help for the available bot commands.',
         usage='|command|group command')
@@ -961,7 +960,7 @@ class HelpCog:
         # noinspection PyUnresolvedReferences
         can_run = await cmd.can_run(ctx)
 
-        if isinstance(cmd, pinguucmds.PinguuGroup):
+        if isinstance(cmd, commands.Group):
             async def sub_cmd_map(c):
                 c = await self.format_command_name(c, ctx, is_full=True)
                 c = f'• {c}'
@@ -1076,7 +1075,7 @@ class HelpCog:
         if cmd.hidden:
             name = f'*{name}*'
 
-        if isinstance(cmd, pinguucmds.PinguuGroup) and getattr(cmd, 'commands'):
+        if isinstance(cmd, commands.Group) and getattr(cmd, 'commands'):
             name = f'{name}\*'
 
         return name

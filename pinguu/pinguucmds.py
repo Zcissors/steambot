@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Default command implementation.
@@ -8,7 +8,8 @@ import logging
 import traceback
 import typing
 
-from discord.ext import commands
+from discord.ext import commands as _commands
+from discord.ext.commands import *
 
 
 class PinguuMixin:
@@ -51,24 +52,23 @@ class PinguuMixin:
             return
 
 
-class PinguuCommand(commands.Command, PinguuMixin):
-    def __init__(self, name, callback, **kwargs):
-        commands.Command.__init__(self, name, callback, **kwargs)
+class Command(_commands.Command, PinguuMixin):
+    def __init__(self, callback, **kwargs):
+        _commands.Command.__init__(self, callback, **kwargs)
         PinguuMixin.__init__(self)
 
 
-class PinguuGroup(commands.Group, PinguuMixin):
-
-    def __init__(self, name, callback, **kwargs):
-        commands.Group.__init__(self, name, callback, **kwargs)
+class Group(_commands.Group, PinguuMixin):
+    def __init__(self, callback, **kwargs):
+        _commands.Group.__init__(self, callback, **kwargs)
         PinguuMixin.__init__(self)
 
 
-def command(**kwargs):
-    kwargs.setdefault('cls', PinguuCommand)
-    return commands.command(**kwargs)
+def command(*args, **kwargs):
+    kwargs.setdefault('cls', Command)
+    return _commands.command(*args, **kwargs)
 
 
-def group(**kwargs):
-    kwargs.setdefault('cls', PinguuGroup)
-    return commands.group(**kwargs)
+def group(*args, **kwargs):
+    kwargs.setdefault('cls', Group)
+    return _commands.group(*args, **kwargs)

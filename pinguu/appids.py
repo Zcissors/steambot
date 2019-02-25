@@ -1,8 +1,10 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import asyncio
 import aiohttp
 import logging
+
+from . import singleton
 
 
 # How often to recache (in seconds).
@@ -11,7 +13,7 @@ PERIOD = 24 * 60 * 60
 ENDPOINT = 'http://api.steampowered.com/ISteamApps/GetAppList/v0002/'
 
 
-class AppIdCacher:
+class AppIdCacherSingleton(metaclass=singleton.SingletonMeta):
     def __init__(self):
         self._lock = asyncio.Lock()
         self._appid2name = {}

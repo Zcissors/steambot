@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # References:
 #     github.com/moshferatu/Steam-ID-Converter/blob/master/SteamIDConverter.py

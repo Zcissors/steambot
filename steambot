@@ -1,11 +1,17 @@
-#!/bin/bash
+#!/usr/bin/bash
+set -o errexit
+set -o noclobber
 
-if (uname | grep -iq mingw); then
-    source venv/Scripts/activate
-    winpty python.exe -3 -m pinguu
+if [[ -d .venv ]]; then
+    venv_path=".venv"
+elif [[ -d venv ]]; then
+    venv_path="venv"
 else
-    source venv/bin/activate
-    python3 -m pinguu
+    echo "No venv exists named \"venv\" or \".venv\". Make one first."
+    exit 1
 fi
 
-exit $?
+echo "Using venv path \"${venv_path}\" and python version $(python -v); entering venv"
+source ${venv_path}/bin/activate || source ${venv_path}/Scripts/activate
+
+python -m pinguu
