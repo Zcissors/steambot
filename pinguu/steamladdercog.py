@@ -445,9 +445,9 @@ class SteamLadderCog(commands.Cog):
                     'vanityurl': steamid
                 }
 
-                session = await session.get(url, params=params)
-                session.raise_for_status()
-                data = await session.json()
+                resp = await session.get(url, params=params)
+                resp.raise_for_status()
+                data = await resp.json()
                 if data['response']['success'] != 1:
                     return await ctx.send(data['response']['message'])
                 steamid = data['response']['steamid']
