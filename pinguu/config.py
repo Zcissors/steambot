@@ -14,7 +14,5 @@ class Config(metaclass=singleton.SingletonMeta):
         self.bot_token = contents['d-token']
         self.bot_id = contents['b-token']
         self.ladder_key = contents['ladder-key']
-        # TODO: put this in your token.json :)
-        self.owner_id = 95721165607141376
-        # TODO: put this in your token.json :)
-        self.command_prefix = '!sl'
+        self.owner_id = contents['my-id']
+        self.command_prefix = contents['prefix']
