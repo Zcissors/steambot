@@ -42,7 +42,7 @@ class SteamLadderCog(commands.Cog):
         for i, guild in enumerate(ctx.bot.guilds):
             owner = guild.owner
 
-            pag.add_line(f'{i + 1:04}  {guild} | {owner} | {guild.id}')
+            pag.add_line(f'{i + 1:04}  {guild} | {owner} | {guild.id} | {guild.member_count}')
 
         for page in pag.pages:
             await ctx.send(page)
