@@ -905,7 +905,7 @@ class HelpCog(commands.Cog):
         embed = discord.Embed(
             title=f'Helpful Information',
             description='Created by: Vee\n'
-                        'This bot is was made to provide\n'
+                        'This bot was made to provide\n'
                         'information about Steam accounts and games',
             color=default_color
         )
