@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import random
-import subprocess
 import time
 import requests
 

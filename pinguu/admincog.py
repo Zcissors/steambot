@@ -20,7 +20,7 @@ class AdminCog(commands.Cog):
 
             pag.add_line(f'{i + 1:04}  {guild} | {owner} | {guild.id} | {guild.member_count}')
 
-            for page in pag.pages:
+        for page in pag.pages:
                 await ctx.send(page)
 
     # ----make an invite----
