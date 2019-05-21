@@ -9,6 +9,6 @@ bot.load_extension('pinguu.steamladdercog')
 bot.load_extension('pinguu.admincog')
 bot.remove_command('help')
 bot.load_extension('pinguu.pinguuhelp')
-bot.load_extension('pinguu.libneko.extras.superuser')
+bot.load_extension('libneko.extras.superuser')
 
 bot.run()
