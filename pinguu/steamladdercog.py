@@ -612,4 +612,4 @@ class SteamLadderCog(commands.Cog):
 
 def setup(bot):
     bot.add_cog(SteamLadderCog(bot))
-    bot.load_extension('libneko.extras.superuser')
+
