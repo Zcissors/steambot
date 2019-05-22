@@ -2,3 +2,4 @@ git+https://github.com/rapptz/discord.py@72b6b67
 requests
 beautifulsoup4
 aiohttp>=3.3.0,<3.6.0
+aiofiles
